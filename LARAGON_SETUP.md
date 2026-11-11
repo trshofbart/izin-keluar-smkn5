@@ -62,6 +62,62 @@ Login admin default:
 |---|---|
 | `admin@smkn5.sch.id` | `admin12345` |
 
+## 4a. Akses lewat localhost (pilih salah satu cara)
+
+**Cara A — VirtualHost port 8001 (disarankan).** Aplikasi diakses sebagai
+`http://localhost:8001/` tanpa path di belakang, sama seperti domain `.test`
+— cara paling aman karena semua aset (CSS, Livewire, QR) memakai alamat root:
+
+1. Salin file `izin-keluar-smkn5-vhost.conf` (ada di repo) menjadi
+   `C:\laragon\etc\apache2\sites-enabled\00-izin-keluar-smkn5.conf`.
+2. Restart Apache di Laragon (Stop lalu Start).
+3. Di `.env`: `APP_URL=http://localhost:8001`, lalu
+   `php artisan config:clear`.
+4. Buka `http://localhost:8001/` (admin: `http://localhost:8001/admin`).
+
+Port 8001 dipakai supaya tidak bentrok dengan Buku Induk (port 8000).
+
+**Cara B — Subdirektori `http://localhost/izin-keluar-smkn5/`.** Pakai Apache
+`Alias` (file `laragon/izin-keluar-smkn5-alias.conf` di repo):
+
+1. Salin `laragon/izin-keluar-smkn5-alias.conf` menjadi
+   `C:\laragon\etc\apache2\sites-enabled\00-izin-keluar-smkn5-alias.conf`.
+2. Restart Apache di Laragon (Stop lalu Start).
+3. Di `.env`: `APP_URL=http://localhost/izin-keluar-smkn5`, lalu
+   `php artisan config:clear`.
+4. Buka `http://localhost/izin-keluar-smkn5/` (admin:
+   `http://localhost/izin-keluar-smkn5/admin`).
+
+Cara ini sudah diuji langsung dengan Apache: form, CSS, Livewire, login
+admin, dan submit form semuanya jalan di subdirektori.
+
+> Jangan memakai `.htaccess` di root proyek yang meneruskan request ke
+> `public/` untuk subdirektori — itu TIDAK jalan untuk Laravel: file
+> statis memang tampil, tapi semua route 404 (Laravel membaca path dari
+> `REQUEST_URI`, dan prefix subdirektori tidak bisa dihilangkan oleh
+> rewrite). Pola yang sama di Buku Induk juga belum pernah teruji di
+> Apache subdirektori. `Alias` di atas adalah cara yang benar.
+
+Tanpa konfigurasi Apache apa pun, alamat subdirektori yang tetap jalan
+adalah `http://localhost/izin-keluar-smkn5/public/` (dengan `/public` di
+tengah) — tapi alamat ini membuat QR dan login Livewire rawan gagal,
+jadi pakai Cara A atau Cara B di atas.
+
+PWA (service worker + manifest) sudah dibuat relatif supaya tetap jalan
+di subdirektori maupun di root.
+
+**Cara C — `php artisan serve` (paling cepat untuk tes).** Dari folder proyek:
+
+```bash
+php artisan serve --port=8001
+```
+
+Lalu buka `http://localhost:8001/` (dengan `APP_URL=http://localhost:8001`).
+Terminal harus tetap jalan selama aplikasi dipakai; tutup terminal =
+aplikasi mati. Untuk akses dari HP di WiFi yang sama:
+`php artisan serve --host=0.0.0.0 --port=8001` lalu buka
+`http://IP-LAN-laptop:8001/` di HP.
+
 ## 5. WAJIB sebelum dipakai / diekspos
 
 1. **Ganti password admin** — login ke `/admin`, klik nama akun kanan atas →

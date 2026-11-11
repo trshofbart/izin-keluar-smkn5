@@ -26,8 +26,8 @@ class IzinController extends Controller
     {
         $validated = $request->validate([
             'nama_siswa' => 'required|string|max:100',
-            'nis' => 'required|string|max:30',
-            'no_absen' => 'nullable|string|max:10',
+            'nis' => 'nullable|string|max:30',
+            'no_absen' => 'required|string|max:10',
             'kelas_id' => 'required|exists:kelas,id',
             'keperluan' => 'required|string|max:1000',
             'jam_ke_mulai' => 'required|integer|min:1|max:10',
@@ -50,8 +50,8 @@ class IzinController extends Controller
             $permohonan = PermohonanIzin::create([
                 'kode' => PermohonanIzin::generateKode(),
                 'nama_siswa' => $validated['nama_siswa'],
-                'nis' => $validated['nis'],
-                'no_absen' => $validated['no_absen'] ?? null,
+                'nis' => $validated['nis'] ?? null,
+                'no_absen' => $validated['no_absen'],
                 'kelas_id' => $kelas->id,
                 'jurusan_id' => $kelas->jurusan_id,
                 'keperluan' => $validated['keperluan'],

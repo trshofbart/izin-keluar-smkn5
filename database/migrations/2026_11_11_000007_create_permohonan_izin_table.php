@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('kode', 30)->unique(); // IZN-YYYYMMDD-XXXX
             $table->string('nama_siswa');
-            $table->string('nis', 30);
-            $table->string('no_absen', 10)->nullable();
+            $table->string('nis', 30)->nullable(); // opsional sejak 2026-11-11
+            $table->string('no_absen', 10); // wajib sejak 2026-11-11
             $table->foreignId('kelas_id')->constrained('kelas');
             $table->foreignId('jurusan_id')->constrained('jurusan');
             $table->text('keperluan');

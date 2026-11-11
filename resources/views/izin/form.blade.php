@@ -17,13 +17,13 @@
                     class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nama siswa">
             </div>
             <div>
-                <label for="nis" class="block text-sm font-semibold mb-1">NIS *</label>
-                <input type="text" id="nis" name="nis" value="{{ old('nis') }}" required
-                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nomor Induk Siswa">
+                <label for="nis" class="block text-sm font-semibold mb-1">NIS</label>
+                <input type="text" id="nis" name="nis" value="{{ old('nis') }}"
+                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nomor Induk Siswa (opsional)">
             </div>
             <div>
-                <label for="no_absen" class="block text-sm font-semibold mb-1">No. Absen</label>
-                <input type="text" id="no_absen" name="no_absen" value="{{ old('no_absen') }}"
+                <label for="no_absen" class="block text-sm font-semibold mb-1">No. Absen *</label>
+                <input type="text" id="no_absen" name="no_absen" value="{{ old('no_absen') }}" required
                     class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Contoh: 12">
             </div>
             <div>

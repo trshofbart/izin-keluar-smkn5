@@ -99,3 +99,13 @@ php artisan view:clear
   (bukan `http://localhost`). Bersihkan cache config: `php artisan config:clear`.
 - **Login admin gagal:** pastikan seeder sudah jalan (`php artisan db:seed
   --class=AdminUserSeeder`) dan password `admin12345`.
+- **Error "POST method is not supported for route admin/login" (405) saat
+  login:** login Filament normalnya lewat Livewire. Error ini muncul bila
+  JavaScript Livewire tidak jalan di browser (biasanya karena diakses lewat
+  subdirektori/`public` atau `APP_URL` tidak cocok dengan alamat yang dibuka,
+  sehingga aset `livewire.js` 404). Perbaikan sudah ada sejak 2026-11-11
+  (route fallback POST `/admin/login`), jadi jalankan `git pull` lalu
+  `php artisan config:clear && php artisan route:clear && php artisan view:clear`,
+  dan pastikan `APP_URL` di `.env` sama dengan alamat yang kamu buka.
+  Akses yang benar di Laragon: `http://izin-keluar-smkn5.test/admin` (bukan
+  `http://localhost/izin-keluar-smkn5/public/admin`).

@@ -26,8 +26,8 @@ class PermohonanIzinResource extends Resource
         return $form->schema([
             Forms\Components\TextInput::make('kode')->disabled()->dehydrated(false),
             Forms\Components\TextInput::make('nama_siswa')->required()->maxLength(100),
-            Forms\Components\TextInput::make('nis')->required()->maxLength(30)->label('NIS'),
-            Forms\Components\TextInput::make('no_absen')->maxLength(10)->label('No. Absen'),
+            Forms\Components\TextInput::make('nis')->maxLength(30)->label('NIS (opsional)'),
+            Forms\Components\TextInput::make('no_absen')->required()->maxLength(10)->label('No. Absen'),
             Forms\Components\Select::make('kelas_id')->relationship('kelas', 'nama')->required()->searchable()->preload()->label('Kelas'),
             Forms\Components\Select::make('jurusan_id')->relationship('jurusan', 'nama')->required()->searchable()->preload()->label('Jurusan'),
             Forms\Components\Textarea::make('keperluan')->required()->columnSpanFull(),

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminLoginController;
 use App\Http\Controllers\GuruController;
 use App\Http\Controllers\IzinController;
 use Illuminate\Support\Facades\Route;
@@ -15,3 +16,8 @@ Route::post('/guru/{barcode_kode}/setujui', [GuruController::class, 'approve'])-
 
 // PWA offline fallback.
 Route::get('/offline', fn () => view('offline'))->name('offline');
+
+// Fallback login admin: route admin/login milik Filament hanya GET (login
+// normal lewat Livewire). Bila Livewire tidak jalan, form terkirim sebagai
+// POST biasa dan Laravel menjawab 405 — route ini yang menangkapnya.
+Route::post('/admin/login', [AdminLoginController::class, 'store'])->name('admin.login.fallback');

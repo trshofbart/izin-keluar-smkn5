@@ -216,4 +216,60 @@ class IzinKeluarTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user)->get('/admin')->assertOk();
     }
+
+    /** NIS opsional (2026-11-11): submit tanpa NIS tetap berhasil, NIS tersimpan null. */
+    public function test_submit_tanpa_nis_berhasil(): void
+    {
+        $response = $this->post('/izin', $this->payload(['nis' => null]));
+
+        $permohonan = PermohonanIzin::firstOrFail();
+        $response->assertRedirect(route('izin.show', $permohonan->kode));
+        $this->assertNull($permohonan->nis);
+        $this->assertEquals('7', $permohonan->no_absen);
+    }
+
+    /** No. Absen wajib (2026-11-11): submit tanpa no absen ditolak validasi. */
+    public function test_submit_tanpa_no_absen_ditolak(): void
+    {
+        $this->post('/izin', $this->payload(['no_absen' => null]))
+            ->assertSessionHasErrors('no_absen');
+        $this->assertEquals(0, PermohonanIzin::count());
+    }
+
+    /**
+     * Fallback POST /admin/login (2026-11-11): login Filament normal lewat
+     * Livewire, tapi bila Livewire tidak jalan form terkirim sebagai POST
+     * biasa — sebelumnya Laravel menjawab 405 karena route itu hanya GET.
+     */
+    public function test_admin_login_post_fallback_berhasil(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'admin@test.id',
+            'password' => 'rahasia123',
+        ]);
+
+        $response = $this->post('/admin/login', [
+            'email' => 'admin@test.id',
+            'password' => 'rahasia123',
+        ]);
+
+        $response->assertRedirect('/admin');
+        $this->assertAuthenticatedAs($user);
+        $this->get('/admin')->assertOk();
+    }
+
+    public function test_admin_login_post_fallback_password_salah_ditolak(): void
+    {
+        User::factory()->create([
+            'email' => 'admin@test.id',
+            'password' => 'rahasia123',
+        ]);
+
+        $this->from('/admin/login')->post('/admin/login', [
+            'email' => 'admin@test.id',
+            'password' => 'salah',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertGuest();
+    }
 }

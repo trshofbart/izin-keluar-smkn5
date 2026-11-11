@@ -39,7 +39,7 @@
     <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <dt class="text-slate-500">Kode Izin</dt><dd class="font-mono font-semibold">{{ $permohonan->kode }}</dd>
         <dt class="text-slate-500">Nama Siswa</dt><dd class="font-semibold">{{ $permohonan->nama_siswa }}</dd>
-        <dt class="text-slate-500">NIS / No. Absen</dt><dd>{{ $permohonan->nis }} @if($permohonan->no_absen) / {{ $permohonan->no_absen }} @endif</dd>
+        <dt class="text-slate-500">NIS / No. Absen</dt><dd>{{ $permohonan->nis ?? '—' }} @if($permohonan->no_absen) / {{ $permohonan->no_absen }} @endif</dd>
         <dt class="text-slate-500">Kelas</dt><dd>{{ $permohonan->kelas->nama }}</dd>
         <dt class="text-slate-500">Jurusan</dt><dd>{{ $permohonan->jurusan->nama }}</dd>
         <dt class="text-slate-500">Tanggal</dt><dd>{{ $permohonan->tanggal->format('d-m-Y') }}</dd>

@@ -90,8 +90,11 @@ php artisan view:clear
   `storage` dan `bootstrap/cache` bisa ditulis.
 - **"No such table" / tabel kosong:** jalankan `php artisan migrate --seed` dari
   folder proyek yang benar; periksa `DB_DATABASE` di `.env`.
-- **CSS tidak tampil:** pastikan `public/build/` ada (sudah termasuk di zip). Bila
-  hilang, jalankan `npm install && npm run build`.
+- **CSS tidak tampil / tampilan polos:** pastikan `public/build/` ada (sudah
+  termasuk di zip, dan ikut ter-commit di GitHub sejak 2026-11-11). Bila clone
+  lama, jalankan `git pull`. Bila tetap hilang, jalankan
+  `npm install && npm run build` — sebagai pengaman, layout juga memuat
+  Tailwind dari CDN bila `public/build/` tidak ada.
 - **QR tidak bisa discan dari HP:** `APP_URL` harus alamat yang bisa dijangkau HP
   (bukan `http://localhost`). Bersihkan cache config: `php artisan config:clear`.
 - **Login admin gagal:** pastikan seeder sudah jalan (`php artisan db:seed

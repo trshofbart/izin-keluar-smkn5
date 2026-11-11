@@ -10,6 +10,10 @@
     <title>@yield('title', 'Izin Keluar Sekolah') — SMKN 5 Surakarta</title>
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        {{-- Fallback bila hasil build Vite tidak ada (mis. clone dari GitHub tanpa npm run build):
+             Tailwind dimuat dari CDN supaya tampilan tetap rapi. --}}
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     @endif
     <script>
         if ('serviceWorker' in navigator) {

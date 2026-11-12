@@ -20,10 +20,15 @@ class User extends Authenticatable implements FilamentUser
         'role' => 'admin',
     ];
 
-    /** Hanya role admin yang boleh masuk panel Filament; satpam memakai halaman /satpam. */
+    /**
+     * Hanya role admin yang boleh masuk panel Filament; satpam memakai halaman /satpam.
+     * Role null = akun lama dari sebelum kolom role ada (instalasi yang belum
+     * menjalankan migrasi 000012) — tetap dianggap admin agar login tidak
+     * terkunci hanya karena migrasi belum jalan.
+     */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->role === 'admin';
+        return $this->role === null || $this->role === 'admin';
     }
 
     public function isAdmin(): bool

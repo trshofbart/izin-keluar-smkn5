@@ -44,6 +44,13 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
    halaman `/satpam` menampilkan semua pos + rekap yang masuk hari ini. Untuk memeriksa
    satu QR: scan QR pos atau buka `/satpam/pos/{kode}` — halaman itu menunjukkan apakah
    QR tersebut **sudah berisi** rekap siswa hari ini dan siapa saja siswanya.
+10. **QR dibawa siswa** — QR hasil cetak juga bisa diberikan ke siswa untuk dibawa saat
+    keluar. Alurnya sama: siswa menempelkan rekapnya ke QR itu (scan + isi kode izin),
+    lalu di gerbang satpam memindai QR yang dibawa siswa. Bila satpam sudah login,
+    scan langsung membuka halaman cek QR tersebut (`/satpam/pos/{kode}`); satpam
+    mencocokkan nama siswa pada daftar rekap dengan siswa yang membawa QR. Admin
+    membuat QR sebanyak kebutuhan di menu QR Pos Statis (satu QR bisa dipakai banyak
+    siswa, atau dibuat khusus per kelompok/keperluan).
 
 ## Akun admin default (seeder)
 
@@ -156,14 +163,15 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-29 test, 150 assertion — mencakup submit form (termasuk banyak siswa per
+31 test, 154 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 (termasuk fallback POST), QR pos statis (kirim rekap hanya setelah disetujui
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
-ditolak dari panel admin).
-Terakhir dijalankan: **29 passed** (2026-11-12).
+ditolak dari panel admin, dan scan QR oleh satpam yang langsung diarahkan ke
+halaman cek).
+Terakhir dijalankan: **31 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

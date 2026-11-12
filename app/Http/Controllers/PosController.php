@@ -16,9 +16,16 @@ class PosController extends Controller
      * Siswa membuka halaman ini (scan kamera bawaan atau fitur scan di
      * aplikasi) lalu mengirim rekap izinnya ke pos ini.
      */
-    public function show(string $kode): View
+    public function show(string $kode): View|RedirectResponse
     {
         $pos = PosQr::where('kode', $kode)->firstOrFail();
+
+        // QR ini juga dibawa siswa saat keluar: bila yang memindai adalah
+        // satpam yang sedang login, langsung arahkan ke halaman cek QR ini
+        // (berisi daftar rekap yang menempel ke QR tersebut).
+        if (auth()->check() && auth()->user()->isSatpam()) {
+            return redirect()->route('satpam.pos', $pos->kode);
+        }
 
         $rekap = null;
         if ($kirimId = session('kirim_id')) {

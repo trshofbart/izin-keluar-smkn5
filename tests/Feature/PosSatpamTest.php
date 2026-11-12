@@ -187,6 +187,28 @@ class PosSatpamTest extends TestCase
             ->assertSee('<svg', false);
     }
 
+    /** QR dibawa siswa: satpam yang login dan memindai QR langsung masuk halaman cek. */
+    public function test_satpam_scan_qr_siswa_langsung_ke_halaman_cek(): void
+    {
+        $satpam = User::create([
+            'name' => 'Satpam Test', 'email' => 'satpam@test.id',
+            'password' => 'satpam12345', 'role' => 'satpam',
+        ]);
+
+        $this->actingAs($satpam)->get(route('pos.show', $this->pos->kode))
+            ->assertRedirect(route('satpam.pos', $this->pos->kode));
+    }
+
+    /** Admin yang membuka QR pos tetap melihat halaman pos (untuk pratinjau). */
+    public function test_admin_scan_qr_tetap_di_halaman_pos(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('pos.show', $this->pos->kode))
+            ->assertOk()
+            ->assertSee('Pos Satpam Gerbang Utama');
+    }
+
     public function test_pos_tidak_ditemukan_404(): void
     {
         $this->get('/pos/kodeyangtidakada')->assertNotFound();

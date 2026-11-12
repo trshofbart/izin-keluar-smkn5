@@ -87,9 +87,12 @@ Fitur token massal di menu Token Guru (tombol di atas tabel):
 
 - **Generate Token Semua Guru** — membuatkan token untuk semua guru yang **belum**
   punya token. Token guru yang sudah ada tidak diubah. Aman dijalankan berulang kali.
-- **Ubah Token Serentak** — mengganti **semua** token yang ada dengan token baru
-  sekaligus (ada konfirmasi dulu). Token lama langsung berhenti berlaku; bagikan
-  token baru ke masing-masing guru setelahnya.
+- **Ubah Token Serentak** — admin mengisi **satu token baru** pada kolom yang
+  disediakan, dan **semua** guru langsung memakai token yang sama itu. Token lama
+  berhenti berlaku seketika; ada tombol "Acak" bila ingin token hasil acakan.
+  Catatan: dengan token seragam, token tidak lagi membedakan guru — siapa pun
+  yang mengetahui token tersebut dapat menyetujui item guru mana pun. Gunakan
+  Generate Ulang per guru bila ingin token unik per guru lagi.
 - **Generate Ulang** (per baris guru) — tetap ada untuk mengganti token satu guru saja.
 
 | Guru | Token contoh |
@@ -176,7 +179,7 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-38 test, 224 assertion — mencakup submit form (termasuk banyak siswa per
+39 test, 231 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
@@ -184,7 +187,7 @@ persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
 ditolak dari panel admin, scan QR tanpa login yang langsung menampilkan
 rekap hari ini, dan tombol Izinkan yang menghapus rekap dari QR, serta tombol Tambah QR Code di panel admin beserta alur buatnya).
-Terakhir dijalankan: **38 passed** (2026-11-12).
+Terakhir dijalankan: **39 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

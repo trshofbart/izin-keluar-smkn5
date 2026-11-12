@@ -90,23 +90,41 @@ class GuruTokenResource extends Resource
                                 ->success()->send();
                         }
                     }),
-                // Mengganti SEMUA token yang ada dengan token baru sekaligus.
+                // Mengganti SEMUA token yang ada sekaligus dengan token yang
+                // diisi admin — semua guru memakai token baru yang sama.
                 Tables\Actions\Action::make('ubahSerentak')
                     ->label('Ubah Token Serentak')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
-                    ->requiresConfirmation()
-                    ->modalHeading('Ubah token semua guru sekaligus?')
-                    ->modalDescription('Semua token yang ada akan diganti baru dan token lama berhenti berlaku segera. Bagikan token baru ke masing-masing guru setelah ini.')
-                    ->modalSubmitActionLabel('Ya, Ubah Semua Token')
-                    ->action(function () {
+                    ->modalHeading('Ubah token semua guru sekaligus')
+                    ->modalDescription('Isi token baru di bawah ini — SEMUA guru akan memakai token yang sama. Token lama berhenti berlaku segera setelah diubah.')
+                    ->modalSubmitActionLabel('Ubah Semua Token')
+                    ->form([
+                        Forms\Components\TextInput::make('token_baru')
+                            ->label('Token Baru untuk Semua Guru')
+                            ->required()
+                            ->minLength(6)
+                            ->maxLength(10)
+                            ->alphaNum()
+                            ->extraInputAttributes(['style' => 'text-transform: uppercase'])
+                            ->helperText('6–10 karakter huruf/angka. Semua guru memakai token yang sama ini.')
+                            ->suffixAction(
+                                Forms\Components\Actions\Action::make('acak')
+                                    ->icon('heroicon-o-arrow-path')
+                                    ->label('Acak')
+                                    ->action(fn (Set $set) => $set('token_baru', GuruToken::generateToken()))
+                            ),
+                    ])
+                    ->action(function (array $data) {
+                        $tokenBaru = Str::upper(trim($data['token_baru']));
+
                         $tokens = GuruToken::all();
                         foreach ($tokens as $token) {
-                            $token->update(['token' => GuruToken::generateToken()]);
+                            $token->update(['token' => $tokenBaru]);
                         }
 
                         Notification::make()
-                            ->title($tokens->count().' token guru berhasil diubah serentak.')
+                            ->title($tokens->count().' token guru berhasil diubah serentak menjadi '.$tokenBaru.'.')
                             ->success()->send();
                     }),
             ])

@@ -51,23 +51,31 @@ class TokenMassalTest extends TestCase
         $this->assertEquals(3, GuruToken::count());
     }
 
-    /** Ubah Token Serentak: semua token yang ada diganti baru sekaligus. */
-    public function test_ubah_token_serentak_mengganti_semua_token(): void
+    /** Ubah Token Serentak: semua guru memakai token dari kolom isian admin. */
+    public function test_ubah_token_serentak_memakai_token_isian_untuk_semua(): void
     {
         Livewire::test(ListGuruTokens::class)
-            ->callTableAction('ubahSerentak')
+            ->callTableAction('ubahSerentak', data: ['token_baru' => 'seren1'])
             ->assertHasNoTableActionErrors();
 
-        $baruA = $this->tokenA->fresh()->token;
-        $baruB = $this->tokenB->fresh()->token;
-        $this->assertNotEquals('AAAA11', $baruA);
-        $this->assertNotEquals('BBBB22', $baruB);
-        $this->assertEquals(6, strlen($baruA));
-        $this->assertEquals(6, strlen($baruB));
+        // Token isian dipakai semua guru (tersimpan huruf besar).
+        $this->assertEquals('SEREN1', $this->tokenA->fresh()->token);
+        $this->assertEquals('SEREN1', $this->tokenB->fresh()->token);
 
         // Jumlah token tidak berubah & guru tanpa token tetap tanpa token.
         $this->assertEquals(2, GuruToken::count());
         $this->assertEquals(0, GuruToken::where('guru_id', $this->guruC->id)->count());
+    }
+
+    /** Ubah Token Serentak: kolom token kosong ditolak, token lama tidak berubah. */
+    public function test_ubah_token_serentak_token_kosong_ditolak(): void
+    {
+        Livewire::test(ListGuruTokens::class)
+            ->callTableAction('ubahSerentak', data: ['token_baru' => ''])
+            ->assertHasTableActionErrors(['token_baru']);
+
+        $this->assertEquals('AAAA11', $this->tokenA->fresh()->token);
+        $this->assertEquals('BBBB22', $this->tokenB->fresh()->token);
     }
 
     /** Fitur lama dipertahankan: Generate Ulang per guru tetap bekerja. */

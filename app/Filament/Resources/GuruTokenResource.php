@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GuruTokenResource\Pages;
+use App\Models\Guru;
 use App\Models\GuruToken;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -57,6 +58,57 @@ class GuruTokenResource extends Resource
             ->filters([
                 Tables\Filters\TernaryFilter::make('aktif')->label('Aktif'),
                 Tables\Filters\SelectFilter::make('guru_id')->relationship('guru', 'nama')->label('Guru'),
+            ])
+            ->headerActions([
+                // Membuat token untuk SEMUA guru yang belum punya token.
+                // Token guru yang sudah ada tidak diubah (pakai Generate Ulang
+                // per guru atau Ubah Token Serentak untuk itu).
+                Tables\Actions\Action::make('generateSemua')
+                    ->label('Generate Token Semua Guru')
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
+                    ->action(function () {
+                        $sudahAda = GuruToken::pluck('guru_id')->all();
+                        $belumPunya = Guru::whereNotIn('id', $sudahAda)->get();
+
+                        foreach ($belumPunya as $guru) {
+                            GuruToken::create([
+                                'guru_id' => $guru->id,
+                                'token' => GuruToken::generateToken(),
+                                'aktif' => true,
+                                'dibuat_oleh' => auth()->id(),
+                            ]);
+                        }
+
+                        if ($belumPunya->isEmpty()) {
+                            Notification::make()
+                                ->title('Semua guru sudah memiliki token. Tidak ada token baru yang dibuat.')
+                                ->info()->send();
+                        } else {
+                            Notification::make()
+                                ->title($belumPunya->count().' token dibuat untuk guru yang belum punya token.')
+                                ->success()->send();
+                        }
+                    }),
+                // Mengganti SEMUA token yang ada dengan token baru sekaligus.
+                Tables\Actions\Action::make('ubahSerentak')
+                    ->label('Ubah Token Serentak')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Ubah token semua guru sekaligus?')
+                    ->modalDescription('Semua token yang ada akan diganti baru dan token lama berhenti berlaku segera. Bagikan token baru ke masing-masing guru setelah ini.')
+                    ->modalSubmitActionLabel('Ya, Ubah Semua Token')
+                    ->action(function () {
+                        $tokens = GuruToken::all();
+                        foreach ($tokens as $token) {
+                            $token->update(['token' => GuruToken::generateToken()]);
+                        }
+
+                        Notification::make()
+                            ->title($tokens->count().' token guru berhasil diubah serentak.')
+                            ->success()->send();
+                    }),
             ])
             ->actions([
                 Tables\Actions\Action::make('regenerate')

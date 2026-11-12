@@ -45,6 +45,11 @@ class PosQrResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->label('Dibuat'),
             ])
             ->filters([])
+            ->emptyStateHeading('Belum ada QR pos')
+            ->emptyStateDescription('Buat QR pos pertama dengan tombol di bawah ini, lalu cetak dari kolom aksi.')
+            ->emptyStateActions([
+                Tables\Actions\CreateAction::make()->label('Tambah QR Code'),
+            ])
             ->actions([
                 Tables\Actions\Action::make('cetak')
                     ->label('Cetak QR')

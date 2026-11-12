@@ -249,6 +249,40 @@ class PosSatpamTest extends TestCase
         $this->assertEquals(1, PosKirim::count());
     }
 
+    /** Halaman QR Pos Statis di admin menampilkan tombol Tambah QR Code. */
+    public function test_panel_admin_menampilkan_tombol_tambah_qr(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // Dengan data: tombol tambah ada di kanan atas daftar.
+        $this->actingAs($admin)->get('/admin/pos-qrs')
+            ->assertOk()
+            ->assertSee('Tambah QR Code');
+
+        // Tanpa data: tampil status kosong dengan tombol tambah juga.
+        PosQr::query()->delete();
+        $this->actingAs($admin)->get('/admin/pos-qrs')
+            ->assertOk()
+            ->assertSee('Belum ada QR pos')
+            ->assertSee('Tambah QR Code');
+    }
+
+    /** Admin bisa menambah QR pos dari panel: nama terisi, kode otomatis dibuat. */
+    public function test_panel_admin_bisa_menambah_qr_pos(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        \Livewire\Livewire::test(\App\Filament\Resources\PosQrResource\Pages\CreatePosQr::class)
+            ->fillForm(['nama' => 'Pos Uji Panel', 'aktif' => true])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $pos = PosQr::where('nama', 'Pos Uji Panel')->firstOrFail();
+        $this->assertEquals(24, strlen($pos->kode));
+        $this->assertTrue($pos->aktif);
+    }
+
     public function test_pos_tidak_ditemukan_404(): void
     {
         $this->get('/pos/kodeyangtidakada')->assertNotFound();

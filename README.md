@@ -167,15 +167,15 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-33 test, 179 assertion — mencakup submit form (termasuk banyak siswa per
+35 test, 189 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 (termasuk fallback POST), QR pos statis (kirim rekap hanya setelah disetujui
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
 ditolak dari panel admin, scan QR tanpa login yang langsung menampilkan
-rekap hari ini, dan tombol Izinkan yang menghapus rekap dari QR).
-Terakhir dijalankan: **33 passed** (2026-11-12).
+rekap hari ini, dan tombol Izinkan yang menghapus rekap dari QR, serta tombol Tambah QR Code di panel admin beserta alur buatnya).
+Terakhir dijalankan: **35 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

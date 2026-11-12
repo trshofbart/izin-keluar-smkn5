@@ -81,6 +81,30 @@ class PosController extends Controller
             ->with('kirim_id', $kirim->id);
     }
 
+    /**
+     * Satpam menekan "Izinkan Keluar" setelah memeriksa rekap di halaman
+     * hasil scan: data rekap tersebut dihapus dari QR ini (siswa sudah
+     * benar-benar keluar, QR kembali kosong untuk pemakaian berikutnya).
+     * Data permohonan di admin tidak ikut terhapus.
+     */
+    public function izinkan(string $kode, PosKirim $kirim): RedirectResponse
+    {
+        $pos = PosQr::where('kode', $kode)->firstOrFail();
+
+        abort_unless($kirim->pos_qr_id === $pos->id, 404);
+
+        $kirim->loadMissing('permohonan.siswas');
+        $nama = $kirim->permohonan->siswas->pluck('nama_siswa');
+        $label = $nama->isNotEmpty()
+            ? $nama->first().($nama->count() > 1 ? ' dkk ('.$nama->count().' siswa)' : '')
+            : $kirim->permohonan->nama_siswa;
+
+        $kirim->delete();
+
+        return redirect()->route('pos.show', $pos->kode)
+            ->with('success', $label.' diizinkan keluar. Data rekapnya sudah dihapus dari QR ini.');
+    }
+
     /** Halaman cetak QR pos (admin/satpam yang sudah login). */
     public function cetak(string $kode): View
     {

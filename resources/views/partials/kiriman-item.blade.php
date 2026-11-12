@@ -17,4 +17,13 @@
         masuk {{ $kirim->created_at->format('H:i') }}@isset($tampilkanPos) · {{ $kirim->posQr->nama }}@endisset
     </p>
     <p class="text-sm mt-1">{{ $p->keperluan }}</p>
+    @isset($tombolIzinkan)
+        <form method="POST" action="{{ route('pos.izinkan', [$posKode, $kirim->id]) }}" class="mt-3"
+            onsubmit="return confirm('Izinkan siswa ini keluar? Data rekapnya akan dihapus dari QR ini.');">
+            @csrf
+            <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2.5 rounded-lg">
+                ✅ Izinkan Keluar
+            </button>
+        </form>
+    @endisset
 </div>

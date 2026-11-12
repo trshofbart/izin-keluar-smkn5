@@ -21,6 +21,7 @@ Route::post('/guru/{barcode_kode}/setujui', [GuruController::class, 'approve'])-
 // Siswa membuka halaman ini lalu mengirim rekap izinnya ke pos tersebut.
 Route::get('/pos/{kode}', [PosController::class, 'show'])->name('pos.show');
 Route::post('/pos/{kode}/kirim', [PosController::class, 'kirim'])->name('pos.kirim');
+Route::post('/pos/{kode}/izinkan/{kirim}', [PosController::class, 'izinkan'])->name('pos.izinkan');
 
 // Halaman satpam (role satpam; admin juga boleh masuk).
 Route::get('/satpam/login', [SatpamController::class, 'loginForm'])->name('satpam.login');

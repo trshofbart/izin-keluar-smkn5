@@ -216,6 +216,39 @@ class PosSatpamTest extends TestCase
             ->assertSee('Pos Satpam Gerbang Utama');
     }
 
+    /** Tombol Izinkan (2026-11-12): satpam mengizinkan -> data rekap terhapus dari QR itu. */
+    public function test_tombol_izinkan_menghapus_rekap_dari_qr(): void
+    {
+        $permohonan = $this->buatPermohonanDisetujui();
+        $this->post(route('pos.kirim', $this->pos->kode), ['izin_kode' => $permohonan->kode]);
+        $kirim = PosKirim::firstOrFail();
+
+        $response = $this->post(route('pos.izinkan', [$this->pos->kode, $kirim->id]));
+
+        $response->assertRedirect(route('pos.show', $this->pos->kode));
+        $response->assertSessionHas('success');
+        $this->assertEquals(0, PosKirim::count());
+        // Data permohonan di admin TIDAK ikut terhapus.
+        $this->assertEquals(1, PermohonanIzin::count());
+
+        // QR kembali kosong.
+        $this->get(route('pos.show', $this->pos->kode))
+            ->assertOk()
+            ->assertSee('belum berisi rekap izin untuk hari ini');
+    }
+
+    /** Rekap milik pos lain tidak bisa diizinkan lewat URL pos yang berbeda. */
+    public function test_izinkan_rekap_pos_lain_404(): void
+    {
+        $posLain = PosQr::create(['nama' => 'Pos Lain']);
+        $permohonan = $this->buatPermohonanDisetujui();
+        $this->post(route('pos.kirim', $this->pos->kode), ['izin_kode' => $permohonan->kode]);
+        $kirim = PosKirim::firstOrFail();
+
+        $this->post(route('pos.izinkan', [$posLain->kode, $kirim->id]))->assertNotFound();
+        $this->assertEquals(1, PosKirim::count());
+    }
+
     public function test_pos_tidak_ditemukan_404(): void
     {
         $this->get('/pos/kodeyangtidakada')->assertNotFound();

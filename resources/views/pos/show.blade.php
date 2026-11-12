@@ -50,10 +50,10 @@
 
     <hr class="my-6">
     <h3 class="font-bold mb-2">Rekap Masuk ke QR Ini — Hari Ini ({{ $kirimanHariIni->count() }})</h3>
-    <p class="text-sm text-slate-500 mb-3">Daftar ini adalah isi QR ini untuk pemeriksaan satpam — tampil langsung setelah scan, tanpa login. Cocokkan nama siswa dengan yang membawa QR.</p>
+    <p class="text-sm text-slate-500 mb-3">Daftar ini adalah isi QR ini untuk pemeriksaan satpam — tampil langsung setelah scan, tanpa login. Cocokkan nama siswa dengan yang membawa QR, lalu tekan <strong>Izinkan Keluar</strong>: data rekap siswa tersebut terhapus dari QR ini.</p>
     <div class="space-y-2">
         @forelse ($kirimanHariIni as $kirim)
-            @include('partials.kiriman-item', ['kirim' => $kirim])
+            @include('partials.kiriman-item', ['kirim' => $kirim, 'tombolIzinkan' => true, 'posKode' => $pos->kode])
         @empty
             <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-3 text-sm font-semibold">
                 QR ini belum berisi rekap izin untuk hari ini.

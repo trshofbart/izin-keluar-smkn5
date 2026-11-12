@@ -45,7 +45,10 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
    menempel ke QR tersebut hari ini. Satpam cukup memindai QR (yang ditempel di pos
    atau yang dibawa siswa) — rekap langsung tampil, **tanpa login**. Bila daftarnya
    kosong, tampil tanda bahwa QR belum berisi rekap untuk hari ini. Satpam
-   mencocokkan nama siswa pada daftar dengan siswa yang membawa QR.
+   mencocokkan nama siswa pada daftar dengan siswa yang membawa QR, lalu menekan
+   tombol **Izinkan Keluar** pada rekap tersebut: data rekap **dihapus dari QR itu**
+   (baris `pos_kirim`-nya) karena siswa sudah benar-benar keluar — QR kembali kosong.
+   Data permohonan di admin tidak ikut terhapus, tetap ada sebagai arsip.
 10. **Login satpam (opsional)** — akun role `satpam` (login di `/satpam/login`) tetap
     tersedia untuk melihat rekap **semua pos sekaligus** di dashboard `/satpam` dan
     riwayat per pos di `/satpam/pos/{kode}`; admin juga boleh masuk. QR dibuat admin
@@ -136,6 +139,7 @@ php artisan serve
 | `/admin` | Panel admin Filament (login) |
 | `GET /pos/{kode}` | Halaman pos tujuan QR statis: siswa kirim rekap di sini + daftar rekap hari ini tampil publik untuk cek satpam tanpa login |
 | `POST /pos/{kode}/kirim` | Siswa mengirim rekap izin yang sudah disetujui ke pos |
+| `POST /pos/{kode}/izinkan/{kirim}` | Satpam mengizinkan keluar — menghapus rekap tersebut dari QR |
 | `GET /pos/{kode}/cetak` | Halaman cetak QR pos (login admin/satpam) |
 | `GET /satpam` | Dashboard satpam (login role satpam/admin) |
 | `GET /satpam/pos/{kode}` | Cek isi satu QR pos: rekap apa saja yang sudah masuk |
@@ -163,15 +167,15 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-31 test, 162 assertion — mencakup submit form (termasuk banyak siswa per
+33 test, 179 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 (termasuk fallback POST), QR pos statis (kirim rekap hanya setelah disetujui
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
-ditolak dari panel admin, dan scan QR tanpa login yang langsung menampilkan
-rekap hari ini).
-Terakhir dijalankan: **31 passed** (2026-11-12).
+ditolak dari panel admin, scan QR tanpa login yang langsung menampilkan
+rekap hari ini, dan tombol Izinkan yang menghapus rekap dari QR).
+Terakhir dijalankan: **33 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

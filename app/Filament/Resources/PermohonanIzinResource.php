@@ -42,7 +42,7 @@ class PermohonanIzinResource extends Resource
                 ])->required(),
             Forms\Components\Select::make('cara_pulang')
                 ->options(['dijemput' => 'Dijemput', 'pulang_sendiri' => 'Pulang Sendiri'])
-                ->required()->label('Cara Keluar'),
+                ->label('Cara Keluar'),
             Forms\Components\TextInput::make('nama_penjemput')->maxLength(100)->label('Nama Penjemput'),
             Forms\Components\Select::make('status')
                 ->options(['menunggu' => 'Menunggu', 'disetujui_sebagian' => 'Disetujui Sebagian', 'disetujui_semua' => 'Disetujui Semua'])
@@ -64,7 +64,13 @@ class PermohonanIzinResource extends Resource
                 Tables\Columns\TextColumn::make('jam_ke_mulai')->label('Jam')->formatStateUsing(fn ($record) => "Jam ke-{$record->jam_ke_mulai} s.d. {$record->jam_ke_selesai}"),
                 Tables\Columns\TextColumn::make('kendaraan')->sortable(),
                 Tables\Columns\TextColumn::make('cara_pulang')->label('Cara Keluar')
-                    ->formatStateUsing(fn (string $state) => $state === 'dijemput' ? 'Dijemput' : 'Pulang Sendiri'),
+                    ->formatStateUsing(fn (?string $state) => match ($state) {
+                        'dijemput' => 'Dijemput',
+                        'pulang_sendiri' => 'Pulang Sendiri',
+                        default => '—',
+                    }),
+                Tables\Columns\TextColumn::make('dipakai_pada')->label('Dipakai')
+                    ->dateTime('d-m-Y H:i')->placeholder('Belum')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()
                     ->colors([
                         'warning' => 'menunggu',

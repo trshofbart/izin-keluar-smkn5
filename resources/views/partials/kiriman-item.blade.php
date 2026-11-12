@@ -13,7 +13,7 @@
     </div>
     <p class="text-xs text-slate-500 mt-1">
         {{ $p->kode }} · Jam ke-{{ $p->jam_ke_mulai }} s.d. {{ $p->jam_ke_selesai }} ·
-        {{ $p->cara_pulang === 'dijemput' ? 'Dijemput' . ($p->nama_penjemput ? ' ('.$p->nama_penjemput.')' : '') : 'Pulang Sendiri' }} ·
+        {{ $p->caraKeluarLabel() }} ·
         masuk {{ $kirim->created_at->format('H:i') }}@isset($tampilkanPos) · {{ $kirim->posQr->nama }}@endisset
     </p>
     <p class="text-sm mt-1">{{ $p->keperluan }}</p>

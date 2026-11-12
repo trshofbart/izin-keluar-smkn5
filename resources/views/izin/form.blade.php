@@ -134,10 +134,10 @@
                 </select>
             </div>
             <div>
-                <span class="block text-sm font-semibold mb-1">Cara Keluar *</span>
+                <span class="block text-sm font-semibold mb-1">Cara Keluar <span class="font-normal text-slate-400">(opsional)</span></span>
                 <div class="flex gap-4 pt-2">
                     <label class="flex items-center gap-2 text-sm">
-                        <input type="radio" name="cara_pulang" value="dijemput" class="accent-green-700" {{ old('cara_pulang') == 'dijemput' ? 'checked' : '' }} required>
+                        <input type="radio" name="cara_pulang" value="dijemput" class="accent-green-700" {{ old('cara_pulang') == 'dijemput' ? 'checked' : '' }}>
                         Dijemput
                     </label>
                     <label class="flex items-center gap-2 text-sm">
@@ -162,12 +162,6 @@
             Buat Barcode Izin
         </button>
     </form>
-</div>
-
-<div class="bg-white rounded-2xl shadow p-5 sm:p-6 mt-4">
-    <h3 class="font-bold text-green-800">Kirim Rekap ke Pos Satpam</h3>
-    <p class="text-sm text-slate-500 mt-1 mb-3">Izinmu sudah disetujui semua guru? Di pos satpam, scan QR pos yang tercetak untuk mengirim rekap izinmu ke pos tersebut.</p>
-    @include('partials.scan-pos', ['mode' => 'siswa'])
 </div>
 
 <script>

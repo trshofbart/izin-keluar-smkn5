@@ -11,8 +11,8 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
    jurusan terisi otomatis) — **bisa ditambah untuk banyak siswa** dalam satu permohonan
    (tombol "+ Tambah Siswa"), keperluan, jam ke mulai–selesai (1–10), daftar dinamis
    mapel & guru yang ditinggal (tombol "+ Tambah Mapel & Guru", guru difilter dari
-   mapping guru–mapel), kendaraan, cara keluar (Dijemput / Pulang Sendiri + nama
-   penjemput bila dijemput).
+   mapping guru–mapel), kendaraan, cara keluar (**opsional**: Dijemput / Pulang
+   Sendiri + nama penjemput bila dijemput; boleh dikosongkan).
 2. **Submit** — `POST /izin` menyimpan permohonan (kode `IZN-YYYYMMDD-XXXX`) beserta
    semua siswanya di `permohonan_siswa`, membuat 1 item persetujuan per pasangan
    mapel–guru **plus 1 item otomatis untuk wali kelas dari setiap kelas siswa**,
@@ -36,10 +36,15 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
    isi nama pos (mis. "Pos Satpam Gerbang Utama"), kode QR dibuat otomatis sekali dan
    tidak berubah. Tombol **Cetak QR** membuka halaman cetak — cetak dan tempel di pos.
 8. **Siswa kirim rekap** — setelah izin disetujui semua guru, siswa memindai QR pos
-   (fitur **Scan QR Pos Satpam** di halaman form & halaman rekap, atau kamera bawaan HP)
+   (fitur **Scan QR Pos Satpam** hanya ada di halaman rekap yang sudah disetujui
+   semua — tidak ada di halaman form — atau lewat kamera bawaan HP)
    → halaman pos `/pos/{kode}` terbuka → siswa mengisi **kode izin** → rekap tersimpan
    ke pos itu (tabel `pos_kirim`). Rekap hanya bisa dikirim bila status sudah
-   `disetujui_semua`; pengiriman ulang tidak menggandakan catatan.
+   `disetujui_semua`. Begitu terkirim, izin **dipakai dan dinonaktifkan**
+   (kolom `dipakai_pada` terisi): kode izin tidak bisa dikirim lagi ke pos mana pun,
+   halaman rekap siswa tidak bisa diakses lagi, dan siswa langsung diarahkan ke
+   **form baru**. Data rekap tetap tersimpan di server untuk dicek satpam dan
+   arsip permohonan di admin tidak berubah.
 9. **Satpam cek tanpa login** — halaman pos `/pos/{kode}` bersifat publik dan selalu
    menampilkan bagian **"Rekap Masuk ke QR Ini — Hari Ini"**: daftar rekap yang sudah
    menempel ke QR tersebut hari ini. Satpam cukup memindai QR (yang ditempel di pos
@@ -195,7 +200,7 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-47 test, 263 assertion — mencakup submit form (termasuk banyak siswa per
+50 test, 282 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
@@ -203,7 +208,7 @@ persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
 ditolak dari panel admin, scan QR tanpa login yang langsung menampilkan
 rekap hari ini, dan tombol Izinkan yang menghapus rekap dari QR, serta tombol Tambah QR Code di panel admin beserta alur buatnya).
-Terakhir dijalankan: **47 passed** (2026-11-12).
+Terakhir dijalankan: **50 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

@@ -55,7 +55,6 @@
 
     <footer class="max-w-2xl mx-auto px-4 pb-8 text-center text-xs text-slate-500">
         SMKN 5 Surakarta &middot; Izin keluar sekolah hanya berlaku setelah semua guru yang bersangkutan memberikan persetujuan.
-        &middot; <a href="{{ route('satpam.login') }}" class="underline">Login Satpam</a>
     </footer>
 </body>
 </html>

@@ -45,7 +45,7 @@ class IzinController extends Controller
             'jam_ke_mulai' => 'required|integer|min:1|max:10',
             'jam_ke_selesai' => 'required|integer|min:1|max:10|gte:jam_ke_mulai',
             'kendaraan' => 'required|in:Sepeda Motor,Mobil,Sepeda,Jalan Kaki,Antar Jemput,Lainnya',
-            'cara_pulang' => 'required|in:dijemput,pulang_sendiri',
+            'cara_pulang' => 'nullable|in:dijemput,pulang_sendiri',
             'nama_penjemput' => 'required_if:cara_pulang,dijemput|nullable|string|max:100',
             'items' => 'required|array|min:1',
             'items.*.mapel_id' => 'required|exists:mapel,id',
@@ -74,7 +74,7 @@ class IzinController extends Controller
                 'jam_ke_mulai' => $validated['jam_ke_mulai'],
                 'jam_ke_selesai' => $validated['jam_ke_selesai'],
                 'kendaraan' => $validated['kendaraan'],
-                'cara_pulang' => $validated['cara_pulang'],
+                'cara_pulang' => $validated['cara_pulang'] ?? null,
                 'nama_penjemput' => $validated['nama_penjemput'] ?? null,
                 'status' => 'menunggu',
                 'barcode_kode' => PermohonanIzin::generateBarcodeKode(),
@@ -134,11 +134,19 @@ class IzinController extends Controller
             ->with('success', 'Permohonan izin berhasil dibuat. Tunjukkan barcode ini kepada guru untuk dipindai.');
     }
 
-    public function show(string $kode): View
+    public function show(string $kode): View|RedirectResponse
     {
         $permohonan = PermohonanIzin::with(['kelas.jurusan', 'jurusan', 'siswas.kelas.jurusan', 'siswas.jurusan', 'items.guru', 'items.mapel', 'items.persetujuan'])
             ->where('kode', $kode)
             ->firstOrFail();
+
+        // Setelah rekap dikirim ke pos satpam, izin dinonaktifkan: halaman
+        // rekap tidak bisa diakses lagi oleh siswa dan ia langsung diarahkan
+        // ke form baru.
+        if ($permohonan->sudahDipakai()) {
+            return redirect()->route('izin.create')
+                ->with('success', 'Izin '.$permohonan->kode.' sudah digunakan pada '.$permohonan->dipakai_pada->format('d-m-Y H:i').' dan sudah dinonaktifkan. Silakan isi form baru bila perlu mengajukan izin lagi.');
+        }
 
         return view('izin.show', compact('permohonan'));
     }

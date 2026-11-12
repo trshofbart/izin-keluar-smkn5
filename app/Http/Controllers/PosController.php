@@ -67,18 +67,26 @@ class PosController extends Controller
                 ->withInput();
         }
 
-        $kirim = PosKirim::firstOrCreate([
-            'pos_qr_id' => $pos->id,
-            'permohonan_id' => $permohonan->id,
-        ]);
+        // Izin yang sudah pernah dikirim ke pos mana pun sudah dipakai dan
+        // dinonaktifkan — tidak bisa dikirim/diakses lagi oleh siswa.
+        if ($permohonan->sudahDipakai()) {
+            return back()->withErrors(['izin_kode' => 'Kode izin ini sudah digunakan pada '.$permohonan->dipakai_pada->format('d-m-Y H:i').' dan sudah dinonaktifkan. Izin tidak bisa dipakai lagi.'])
+                ->withInput();
+        }
 
-        $pesan = $kirim->wasRecentlyCreated
-            ? 'Rekap izin '.$permohonan->kode.' berhasil dikirim ke '.$pos->nama.'. Tunjukkan halaman ini ke satpam bila diminta.'
-            : 'Rekap izin '.$permohonan->kode.' sudah pernah dikirim ke '.$pos->nama.' pada '.$kirim->created_at->format('d-m-Y H:i').'.';
+        \Illuminate\Support\Facades\DB::transaction(function () use ($pos, $permohonan) {
+            PosKirim::firstOrCreate([
+                'pos_qr_id' => $pos->id,
+                'permohonan_id' => $permohonan->id,
+            ]);
 
-        return redirect()->route('pos.show', $pos->kode)
-            ->with('success', $pesan)
-            ->with('kirim_id', $kirim->id);
+            $permohonan->update(['dipakai_pada' => now()]);
+        });
+
+        // Siswa langsung diarahkan ke form baru; rekapnya tersimpan di sisi
+        // server untuk dicek satpam pada halaman pos ini.
+        return redirect()->route('izin.create')
+            ->with('success', 'Rekap izin '.$permohonan->kode.' berhasil dikirim ke '.$pos->nama.'. Izinmu sudah dipakai dan dinonaktifkan — form baru sudah dibuka bila kamu perlu mengajukan izin lagi.');
     }
 
     /**

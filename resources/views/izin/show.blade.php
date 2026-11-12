@@ -52,7 +52,7 @@
         <dt class="text-slate-500">Jam Ke</dt><dd>Jam ke-{{ $permohonan->jam_ke_mulai }} s.d. Jam ke-{{ $permohonan->jam_ke_selesai }}</dd>
         <dt class="text-slate-500">Keperluan</dt><dd>{{ $permohonan->keperluan }}</dd>
         <dt class="text-slate-500">Kendaraan</dt><dd>{{ $permohonan->kendaraan }}</dd>
-        <dt class="text-slate-500">Cara Keluar</dt><dd>{{ $permohonan->cara_pulang === 'dijemput' ? 'Dijemput' . ($permohonan->nama_penjemput ? ' ('.$permohonan->nama_penjemput.')' : '') : 'Pulang Sendiri' }}</dd>
+        <dt class="text-slate-500">Cara Keluar</dt><dd>{{ $permohonan->caraKeluarLabel() }}</dd>
         <dt class="text-slate-500">Status</dt><dd class="font-semibold {{ $semua ? 'text-green-700' : 'text-amber-700' }}">{{ $permohonan->statusLabel() }}</dd>
     </dl>
 

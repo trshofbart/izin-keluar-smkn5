@@ -15,13 +15,31 @@ class PermohonanIzin extends Model
         'kode', 'nama_siswa', 'nis', 'no_absen', 'kelas_id', 'jurusan_id',
         'keperluan', 'tanggal', 'jam_ke_mulai', 'jam_ke_selesai',
         'kendaraan', 'cara_pulang', 'nama_penjemput', 'status', 'barcode_kode',
+        'dipakai_pada',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'jam_ke_mulai' => 'integer',
         'jam_ke_selesai' => 'integer',
+        'dipakai_pada' => 'datetime',
     ];
+
+    /** Label Cara Keluar yang aman untuk nilai kosong (opsional). */
+    public function caraKeluarLabel(): string
+    {
+        return match ($this->cara_pulang) {
+            'dijemput' => 'Dijemput'.($this->nama_penjemput ? ' ('.$this->nama_penjemput.')' : ''),
+            'pulang_sendiri' => 'Pulang Sendiri',
+            default => '—',
+        };
+    }
+
+    /** Izin sudah dikirim ke pos satpam: dinonaktifkan untuk siswa. */
+    public function sudahDipakai(): bool
+    {
+        return $this->dipakai_pada !== null;
+    }
 
     public static function generateKode(): string
     {

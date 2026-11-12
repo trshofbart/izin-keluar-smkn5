@@ -309,6 +309,22 @@ class IzinKeluarTest extends TestCase
      * Livewire, tapi bila Livewire tidak jalan form terkirim sebagai POST
      * biasa — sebelumnya Laravel menjawab 405 karena route itu hanya GET.
      */
+    /** Cara Keluar opsional: submit tanpa memilih cara keluar tetap berhasil. */
+    public function test_submit_tanpa_cara_keluar_berhasil(): void
+    {
+        $response = $this->post('/izin', $this->payload(['cara_pulang' => null, 'nama_penjemput' => null]));
+
+        $permohonan = PermohonanIzin::firstOrFail();
+        $response->assertRedirect(route('izin.show', $permohonan->kode));
+        $this->assertNull($permohonan->cara_pulang);
+        $this->assertNull($permohonan->nama_penjemput);
+
+        // Halaman rekap tetap terbuka dan menampilkan '—' untuk Cara Keluar.
+        $this->get(route('izin.show', $permohonan->kode))
+            ->assertOk()
+            ->assertSee('Cara Keluar');
+    }
+
     public function test_admin_login_post_fallback_berhasil(): void
     {
         $user = User::factory()->create([

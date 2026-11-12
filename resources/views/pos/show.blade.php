@@ -29,7 +29,7 @@
                 </dd>
                 <dt class="text-slate-500">Jam Ke</dt><dd>Jam ke-{{ $p->jam_ke_mulai }} s.d. Jam ke-{{ $p->jam_ke_selesai }}</dd>
                 <dt class="text-slate-500">Keperluan</dt><dd>{{ $p->keperluan }}</dd>
-                <dt class="text-slate-500">Cara Keluar</dt><dd>{{ $p->cara_pulang === 'dijemput' ? 'Dijemput' . ($p->nama_penjemput ? ' ('.$p->nama_penjemput.')' : '') : 'Pulang Sendiri' }}</dd>
+                <dt class="text-slate-500">Cara Keluar</dt><dd>{{ $p->caraKeluarLabel() }}</dd>
                 <dt class="text-slate-500">Dikirim</dt><dd>{{ $rekap->created_at->format('d-m-Y H:i') }}</dd>
             </dl>
             <a href="{{ route('izin.show', $p->kode) }}" class="block text-center mt-4 bg-white border border-green-700 text-green-800 font-bold py-2.5 rounded-xl">Lihat Halaman Barcode Izin</a>

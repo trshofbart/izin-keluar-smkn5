@@ -79,18 +79,46 @@ class PosSatpamTest extends TestCase
             'izin_kode' => $permohonan->kode,
         ]);
 
-        $response->assertRedirect(route('pos.show', $this->pos->kode));
-        $response->assertSessionHas('kirim_id');
+        // Setelah kirim: siswa langsung diarahkan ke form baru, izinnya
+        // ditandai sudah dipakai/dinonaktifkan.
+        $response->assertRedirect(route('izin.create'));
+        $response->assertSessionHas('success');
         $this->assertEquals(1, PosKirim::count());
         $this->assertDatabaseHas('pos_kirim', [
             'pos_qr_id' => $this->pos->id,
             'permohonan_id' => $permohonan->id,
         ]);
+        $this->assertNotNull($permohonan->fresh()->dipakai_pada);
 
-        // Kirim ulang tidak menggandakan catatan.
-        $this->post(route('pos.kirim', $this->pos->kode), ['izin_kode' => $permohonan->kode])
-            ->assertRedirect(route('pos.show', $this->pos->kode));
+        // Kirim ulang ditolak: izin sudah dipakai dan dinonaktifkan.
+        $this->from(route('pos.show', $this->pos->kode))
+            ->post(route('pos.kirim', $this->pos->kode), ['izin_kode' => $permohonan->kode])
+            ->assertSessionHasErrors('izin_kode');
         $this->assertEquals(1, PosKirim::count());
+
+        // Halaman rekap siswa tidak bisa diakses lagi: diarahkan ke form baru.
+        $this->get(route('izin.show', $permohonan->kode))
+            ->assertRedirect(route('izin.create'));
+    }
+
+    /** Form siswa bersih: tanpa tombol scan QR dan tanpa login satpam. */
+    public function test_form_siswa_tanpa_scan_dan_login_satpam(): void
+    {
+        $this->get(route('izin.create'))
+            ->assertOk()
+            ->assertDontSee('Login Satpam')
+            ->assertDontSee('Kirim Rekap ke Pos Satpam')
+            ->assertDontSee('Scan QR Pos Satpam');
+    }
+
+    /** Tombol scan hanya tampil di halaman rekap setelah disetujui semua. */
+    public function test_scan_hanya_di_rekap_setelah_disetujui(): void
+    {
+        $permohonan = $this->buatPermohonanDisetujui();
+
+        $this->get(route('izin.show', $permohonan->kode))
+            ->assertOk()
+            ->assertSee('Scan QR Pos Satpam');
     }
 
     public function test_kirim_rekap_ditolak_bila_belum_disetujui_semua(): void

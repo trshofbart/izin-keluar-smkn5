@@ -4,11 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\KelasResource\Pages;
 use App\Models\Kelas;
+use App\Support\KelasImporter;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 
 class KelasResource extends Resource
 {
@@ -56,6 +60,59 @@ class KelasResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('jurusan_id')->relationship('jurusan', 'nama')->label('Jurusan'),
                 Tables\Filters\SelectFilter::make('tingkat')->options(['X' => 'X', 'XI' => 'XI', 'XII' => 'XII', 'XIII' => 'XIII']),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('import')
+                    ->label('Import File')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('success')
+                    ->modalHeading('Import Data Kelas')
+                    ->modalDescription('Unggah file CSV atau XLSX berisi daftar kelas. Kelas yang sudah ada (jurusan + tingkat + nama sama) diperbarui wali kelasnya; sisanya dibuat baru.')
+                    ->modalSubmitActionLabel('Import')
+                    ->form([
+                        Forms\Components\FileUpload::make('file')
+                            ->label('File Kelas (CSV / XLSX)')
+                            ->required()
+                            ->disk('local')
+                            ->directory('import-kelas')
+                            ->acceptedFileTypes([
+                                'text/csv',
+                                'text/plain',
+                                'application/csv',
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                            ])
+                            ->maxSize(5120)
+                            ->helperText(new HtmlString(
+                                'Kolom: <strong>Jurusan</strong> (kode, mis. RPL), <strong>Tingkat</strong> (X/XI/XII/XIII), '
+                                .'<strong>Nama Kelas</strong>, <strong>Wali Kelas</strong> (nama guru, boleh kosong). '
+                                .'<a href="'.route('kelas.template').'" target="_blank" class="underline font-semibold">Unduh template XLSX</a>.'
+                            )),
+                    ])
+                    ->action(function (array $data) {
+                        $path = Storage::disk('local')->path($data['file']);
+
+                        try {
+                            $hasil = KelasImporter::import($path);
+                        } catch (\RuntimeException $e) {
+                            Notification::make()->title('Import gagal')->body($e->getMessage())->danger()->send();
+
+                            return;
+                        } finally {
+                            Storage::disk('local')->delete($data['file']);
+                        }
+
+                        $ringkas = "{$hasil['dibuat']} kelas dibuat, {$hasil['diperbarui']} diperbarui, {$hasil['dilewati']} dilewati.";
+
+                        if ($hasil['pesan'] !== []) {
+                            Notification::make()
+                                ->title('Import selesai: '.$ringkas)
+                                ->body(implode("\n", array_slice($hasil['pesan'], 0, 15)))
+                                ->warning()->persistent()->send();
+                        } else {
+                            Notification::make()->title('Import selesai: '.$ringkas)->success()->send();
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

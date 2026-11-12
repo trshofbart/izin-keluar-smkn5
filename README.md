@@ -77,6 +77,22 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
 Akun satpam hanya bisa membuka halaman satpam (`/satpam`) dan halaman cetak QR —
 **tidak** bisa masuk panel admin. ⚠️ Wajib ganti password juga sebelum produksi.
 
+## Import data kelas
+
+Di menu **Kelas** (`/admin/kelas`) ada tombol **Import File** untuk memasukkan
+banyak kelas sekaligus dari file **CSV atau XLSX**:
+
+- Kolom: **Jurusan** (kode jurusan, mis. `RPL` — nama jurusan persis juga bisa),
+  **Tingkat** (`X`/`XI`/`XII`/`XIII`, angka 10–13 juga diterima),
+  **Nama Kelas**, **Wali Kelas** (nama guru persis, boleh kosong).
+- Template XLSX bisa diunduh dari jendela import (atau `GET /kelas/template`).
+- Kelas yang sudah ada (jurusan + tingkat + nama sama) **diperbarui** wali
+  kelasnya — sel wali yang kosong tidak menghapus wali lama. Baris yang salah
+  (jurusan/tingkat tidak dikenal) dilewati dan dilaporkan di notifikasi hasil;
+  wali kelas yang tidak ditemukan membuat kelas tetap disimpan tanpa wali,
+  dengan peringatan.
+- CSV dengan pemisah `;` (Excel Indonesia) maupun `,` sama-sama didukung.
+
 ## Token guru contoh (seeder — CONTOH SAJA)
 
 Token dibuat admin di `/admin/guru-tokens`. Token contoh di bawah hanya untuk uji coba;
@@ -179,7 +195,7 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-39 test, 231 assertion — mencakup submit form (termasuk banyak siswa per
+47 test, 263 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
@@ -187,7 +203,7 @@ persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
 ditolak dari panel admin, scan QR tanpa login yang langsung menampilkan
 rekap hari ini, dan tombol Izinkan yang menghapus rekap dari QR, serta tombol Tambah QR Code di panel admin beserta alur buatnya).
-Terakhir dijalankan: **39 passed** (2026-11-12).
+Terakhir dijalankan: **47 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

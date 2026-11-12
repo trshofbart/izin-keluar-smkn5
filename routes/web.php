@@ -32,6 +32,12 @@ Route::middleware(['auth', SatpamMiddleware::class])->group(function () {
     Route::post('/satpam/cek', [SatpamController::class, 'cek'])->name('satpam.cek');
     Route::get('/satpam/pos/{kode}', [SatpamController::class, 'pos'])->name('satpam.pos');
     Route::get('/pos/{kode}/cetak', [PosController::class, 'cetak'])->name('pos.cetak');
+    Route::get('/kelas/template', function () {
+        return response(\App\Support\KelasImporter::templateXlsx(), 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="template-import-kelas.xlsx"',
+        ]);
+    })->name('kelas.template');
 });
 
 // PWA offline fallback.

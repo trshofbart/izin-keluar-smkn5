@@ -48,10 +48,19 @@
         </form>
     @endif
 
-    <div class="mt-6 bg-slate-50 border rounded-xl p-4 text-sm">
-        <p class="font-semibold">Untuk Satpam</p>
-        <p class="text-slate-500 mt-1">Cek rekap yang sudah masuk ke QR pos ini di halaman satpam.</p>
-        <a href="{{ route('satpam.pos', $pos->kode) }}" class="inline-block mt-2 bg-white border border-green-700 text-green-800 font-bold px-4 py-2 rounded-lg">Buka Cek Satpam (perlu login)</a>
+    <hr class="my-6">
+    <h3 class="font-bold mb-2">Rekap Masuk ke QR Ini — Hari Ini ({{ $kirimanHariIni->count() }})</h3>
+    <p class="text-sm text-slate-500 mb-3">Daftar ini adalah isi QR ini untuk pemeriksaan satpam — tampil langsung setelah scan, tanpa login. Cocokkan nama siswa dengan yang membawa QR.</p>
+    <div class="space-y-2">
+        @forelse ($kirimanHariIni as $kirim)
+            @include('partials.kiriman-item', ['kirim' => $kirim])
+        @empty
+            <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-3 text-sm font-semibold">
+                QR ini belum berisi rekap izin untuk hari ini.
+            </div>
+        @endforelse
     </div>
+
+    <p class="text-xs text-slate-400 mt-6">Satpam juga dapat login (opsional) untuk melihat rekap semua pos sekaligus di <a href="{{ route('satpam.login') }}" class="underline">halaman satpam</a>.</p>
 </div>
 @endsection

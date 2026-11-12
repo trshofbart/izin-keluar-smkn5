@@ -40,17 +40,17 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
    → halaman pos `/pos/{kode}` terbuka → siswa mengisi **kode izin** → rekap tersimpan
    ke pos itu (tabel `pos_kirim`). Rekap hanya bisa dikirim bila status sudah
    `disetujui_semua`; pengiriman ulang tidak menggandakan catatan.
-9. **Satpam** — login di `/satpam/login` (role `satpam`; admin juga boleh masuk),
-   halaman `/satpam` menampilkan semua pos + rekap yang masuk hari ini. Untuk memeriksa
-   satu QR: scan QR pos atau buka `/satpam/pos/{kode}` — halaman itu menunjukkan apakah
-   QR tersebut **sudah berisi** rekap siswa hari ini dan siapa saja siswanya.
-10. **QR dibawa siswa** — QR hasil cetak juga bisa diberikan ke siswa untuk dibawa saat
-    keluar. Alurnya sama: siswa menempelkan rekapnya ke QR itu (scan + isi kode izin),
-    lalu di gerbang satpam memindai QR yang dibawa siswa. Bila satpam sudah login,
-    scan langsung membuka halaman cek QR tersebut (`/satpam/pos/{kode}`); satpam
-    mencocokkan nama siswa pada daftar rekap dengan siswa yang membawa QR. Admin
-    membuat QR sebanyak kebutuhan di menu QR Pos Statis (satu QR bisa dipakai banyak
-    siswa, atau dibuat khusus per kelompok/keperluan).
+9. **Satpam cek tanpa login** — halaman pos `/pos/{kode}` bersifat publik dan selalu
+   menampilkan bagian **"Rekap Masuk ke QR Ini — Hari Ini"**: daftar rekap yang sudah
+   menempel ke QR tersebut hari ini. Satpam cukup memindai QR (yang ditempel di pos
+   atau yang dibawa siswa) — rekap langsung tampil, **tanpa login**. Bila daftarnya
+   kosong, tampil tanda bahwa QR belum berisi rekap untuk hari ini. Satpam
+   mencocokkan nama siswa pada daftar dengan siswa yang membawa QR.
+10. **Login satpam (opsional)** — akun role `satpam` (login di `/satpam/login`) tetap
+    tersedia untuk melihat rekap **semua pos sekaligus** di dashboard `/satpam` dan
+    riwayat per pos di `/satpam/pos/{kode}`; admin juga boleh masuk. QR dibuat admin
+    sebanyak kebutuhan di menu QR Pos Statis (satu QR bisa dipakai banyak siswa, atau
+    dibuat khusus per kelompok/keperluan).
 
 ## Akun admin default (seeder)
 
@@ -134,7 +134,7 @@ php artisan serve
 | `POST /guru/{barcode_kode}/setujui` | Simpan persetujuan guru |
 | `GET /offline` | Halaman fallback PWA offline |
 | `/admin` | Panel admin Filament (login) |
-| `GET /pos/{kode}` | Halaman pos tujuan QR statis (siswa kirim rekap di sini) |
+| `GET /pos/{kode}` | Halaman pos tujuan QR statis: siswa kirim rekap di sini + daftar rekap hari ini tampil publik untuk cek satpam tanpa login |
 | `POST /pos/{kode}/kirim` | Siswa mengirim rekap izin yang sudah disetujui ke pos |
 | `GET /pos/{kode}/cetak` | Halaman cetak QR pos (login admin/satpam) |
 | `GET /satpam` | Dashboard satpam (login role satpam/admin) |
@@ -163,14 +163,14 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-31 test, 154 assertion — mencakup submit form (termasuk banyak siswa per
+31 test, 162 assertion — mencakup submit form (termasuk banyak siswa per
 permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
 halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
 persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
 (termasuk fallback POST), QR pos statis (kirim rekap hanya setelah disetujui
 semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
-ditolak dari panel admin, dan scan QR oleh satpam yang langsung diarahkan ke
-halaman cek).
+ditolak dari panel admin, dan scan QR tanpa login yang langsung menampilkan
+rekap hari ini).
 Terakhir dijalankan: **31 passed** (2026-11-12).
 
 ## Yang belum terverifikasi

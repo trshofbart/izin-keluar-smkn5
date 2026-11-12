@@ -16,16 +16,9 @@ class PosController extends Controller
      * Siswa membuka halaman ini (scan kamera bawaan atau fitur scan di
      * aplikasi) lalu mengirim rekap izinnya ke pos ini.
      */
-    public function show(string $kode): View|RedirectResponse
+    public function show(string $kode): View
     {
         $pos = PosQr::where('kode', $kode)->firstOrFail();
-
-        // QR ini juga dibawa siswa saat keluar: bila yang memindai adalah
-        // satpam yang sedang login, langsung arahkan ke halaman cek QR ini
-        // (berisi daftar rekap yang menempel ke QR tersebut).
-        if (auth()->check() && auth()->user()->isSatpam()) {
-            return redirect()->route('satpam.pos', $pos->kode);
-        }
 
         $rekap = null;
         if ($kirimId = session('kirim_id')) {
@@ -36,7 +29,15 @@ class PosController extends Controller
             }
         }
 
-        return view('pos.show', compact('pos', 'rekap'));
+        // Daftar rekap hari ini tampil publik di halaman ini: satpam cukup
+        // memindai QR yang dibawa siswa untuk memeriksa isinya, tanpa login.
+        $kirimanHariIni = PosKirim::with(['permohonan.siswas.kelas', 'permohonan.siswas.jurusan', 'permohonan.kelas', 'permohonan.jurusan'])
+            ->where('pos_qr_id', $pos->id)
+            ->whereDate('created_at', today())
+            ->latest()
+            ->get();
+
+        return view('pos.show', compact('pos', 'rekap', 'kirimanHariIni'));
     }
 
     /** Siswa mengirim data rekap izinnya ke QR pos ini. */

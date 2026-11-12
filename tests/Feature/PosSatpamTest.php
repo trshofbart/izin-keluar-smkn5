@@ -187,16 +187,23 @@ class PosSatpamTest extends TestCase
             ->assertSee('<svg', false);
     }
 
-    /** QR dibawa siswa: satpam yang login dan memindai QR langsung masuk halaman cek. */
-    public function test_satpam_scan_qr_siswa_langsung_ke_halaman_cek(): void
+    /** Cek satpam tanpa login (2026-11-12): scan QR yang dibawa siswa langsung menampilkan rekap hari ini. */
+    public function test_scan_qr_tanpa_login_menampilkan_rekap_hari_ini(): void
     {
-        $satpam = User::create([
-            'name' => 'Satpam Test', 'email' => 'satpam@test.id',
-            'password' => 'satpam12345', 'role' => 'satpam',
-        ]);
+        // Sebelum ada kiriman: QR ditandai belum berisi.
+        $this->get(route('pos.show', $this->pos->kode))
+            ->assertOk()
+            ->assertSee('belum berisi rekap izin untuk hari ini');
 
-        $this->actingAs($satpam)->get(route('pos.show', $this->pos->kode))
-            ->assertRedirect(route('satpam.pos', $this->pos->kode));
+        $permohonan = $this->buatPermohonanDisetujui();
+        $this->post(route('pos.kirim', $this->pos->kode), ['izin_kode' => $permohonan->kode]);
+
+        // Tamu (satpam tanpa login) memindai QR -> rekap langsung tampil.
+        $this->get(route('pos.show', $this->pos->kode))
+            ->assertOk()
+            ->assertSee('Rekap Masuk ke QR Ini — Hari Ini (1)')
+            ->assertSee('Budi Contoh')
+            ->assertSee($permohonan->kode);
     }
 
     /** Admin yang membuka QR pos tetap melihat halaman pos (untuk pratinjau). */

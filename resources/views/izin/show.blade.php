@@ -102,4 +102,15 @@
     @endif
     <a href="{{ $guruUrl }}" class="flex-1 text-center bg-white border border-green-700 text-green-800 font-bold py-3 rounded-xl">Buka Halaman Guru</a>
 </div>
+
+@if ($semua)
+    <div class="bg-white rounded-2xl shadow p-5 mt-4">
+        <h3 class="font-bold text-green-800">Kirim Rekap ke Pos Satpam</h3>
+        <p class="text-sm text-slate-500 mt-1 mb-3">
+            Di pos satpam, scan QR pos yang tercetak, lalu isi kode izinmu
+            <span class="font-mono font-bold">{{ $permohonan->kode }}</span> — rekap izin ini akan terkirim ke pos tersebut dan dapat dicek satpam.
+        </p>
+        @include('partials.scan-pos', ['mode' => 'siswa'])
+    </div>
+@endif
 @endsection

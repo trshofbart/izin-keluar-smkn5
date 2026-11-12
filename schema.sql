@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
   `email_verified_at` TIMESTAMP NULL DEFAULT NULL,
+  `role` VARCHAR(20) NOT NULL DEFAULT 'admin',
   `password` VARCHAR(255) NOT NULL,
   `remember_token` VARCHAR(100) NULL DEFAULT NULL,
   `created_at` TIMESTAMP NULL DEFAULT NULL,
@@ -175,4 +176,27 @@ CREATE TABLE IF NOT EXISTS `permohonan_siswa` (
   CONSTRAINT `permohonan_siswa_permohonan_id_foreign` FOREIGN KEY (`permohonan_id`) REFERENCES `permohonan_izin` (`id`) ON DELETE CASCADE,
   CONSTRAINT `permohonan_siswa_kelas_id_foreign` FOREIGN KEY (`kelas_id`) REFERENCES `kelas` (`id`),
   CONSTRAINT `permohonan_siswa_jurusan_id_foreign` FOREIGN KEY (`jurusan_id`) REFERENCES `jurusan` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `pos_qr` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nama` VARCHAR(100) NOT NULL,
+  `kode` VARCHAR(32) NOT NULL,
+  `aktif` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pos_qr_kode_unique` (`kode`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `pos_kirim` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `pos_qr_id` BIGINT UNSIGNED NOT NULL,
+  `permohonan_id` BIGINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pos_kirim_pos_qr_id_permohonan_id_unique` (`pos_qr_id`, `permohonan_id`),
+  CONSTRAINT `pos_kirim_pos_qr_id_foreign` FOREIGN KEY (`pos_qr_id`) REFERENCES `pos_qr` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pos_kirim_permohonan_id_foreign` FOREIGN KEY (`permohonan_id`) REFERENCES `permohonan_izin` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -17,6 +17,17 @@ class AdminUserSeeder extends Seeder
             [
                 'name' => 'Admin SMKN 5 Surakarta',
                 'password' => Hash::make('admin12345'),
+                'role' => 'admin',
+            ]
+        );
+
+        // Akun satpam default untuk halaman /satpam. GANTI PASSWORD juga!
+        User::firstOrCreate(
+            ['email' => 'satpam@smkn5.sch.id'],
+            [
+                'name' => 'Satpam SMKN 5 Surakarta',
+                'password' => Hash::make('satpam12345'),
+                'role' => 'satpam',
             ]
         );
     }

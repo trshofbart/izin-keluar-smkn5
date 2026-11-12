@@ -32,6 +32,18 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
    disetujui, total), resource Permohonan Izin (rekap + filter status/kelas/jurusan/
    tanggal + relation manager item & persetujuan), Jurusan, Kelas (mapping wali kelas),
    Guru, Mata Pelajaran, Mapping Guru & Mapel, Token Guru (generate token acak 6 karakter).
+7. **QR Pos Statis** — admin membuat pos di menu **QR Pos Statis** (`/admin/pos-qrs`):
+   isi nama pos (mis. "Pos Satpam Gerbang Utama"), kode QR dibuat otomatis sekali dan
+   tidak berubah. Tombol **Cetak QR** membuka halaman cetak — cetak dan tempel di pos.
+8. **Siswa kirim rekap** — setelah izin disetujui semua guru, siswa memindai QR pos
+   (fitur **Scan QR Pos Satpam** di halaman form & halaman rekap, atau kamera bawaan HP)
+   → halaman pos `/pos/{kode}` terbuka → siswa mengisi **kode izin** → rekap tersimpan
+   ke pos itu (tabel `pos_kirim`). Rekap hanya bisa dikirim bila status sudah
+   `disetujui_semua`; pengiriman ulang tidak menggandakan catatan.
+9. **Satpam** — login di `/satpam/login` (role `satpam`; admin juga boleh masuk),
+   halaman `/satpam` menampilkan semua pos + rekap yang masuk hari ini. Untuk memeriksa
+   satu QR: scan QR pos atau buka `/satpam/pos/{kode}` — halaman itu menunjukkan apakah
+   QR tersebut **sudah berisi** rekap siswa hari ini dan siapa saja siswanya.
 
 ## Akun admin default (seeder)
 
@@ -43,6 +55,17 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
 > ⚠️ **Wajib ganti password setelah instalasi pertama** (di Filament: klik nama akun
 > kanan atas → profil, atau buat user baru lalu hapus akun ini). Jangan biarkan
 > password default aktif di server yang diekspos ke internet.
+
+## Akun satpam default (seeder)
+
+| | |
+|---|---|
+| Email | `satpam@smkn5.sch.id` |
+| Password | `satpam12345` |
+| Login di | `/satpam/login` |
+
+Akun satpam hanya bisa membuka halaman satpam (`/satpam`) dan halaman cetak QR —
+**tidak** bisa masuk panel admin. ⚠️ Wajib ganti password juga sebelum produksi.
 
 ## Token guru contoh (seeder — CONTOH SAJA)
 
@@ -104,6 +127,12 @@ php artisan serve
 | `POST /guru/{barcode_kode}/setujui` | Simpan persetujuan guru |
 | `GET /offline` | Halaman fallback PWA offline |
 | `/admin` | Panel admin Filament (login) |
+| `GET /pos/{kode}` | Halaman pos tujuan QR statis (siswa kirim rekap di sini) |
+| `POST /pos/{kode}/kirim` | Siswa mengirim rekap izin yang sudah disetujui ke pos |
+| `GET /pos/{kode}/cetak` | Halaman cetak QR pos (login admin/satpam) |
+| `GET /satpam` | Dashboard satpam (login role satpam/admin) |
+| `GET /satpam/pos/{kode}` | Cek isi satu QR pos: rekap apa saja yang sudah masuk |
+| `GET /satpam/login` | Login satpam |
 
 ## PWA
 
@@ -115,10 +144,11 @@ php artisan serve
 
 ## Skema database
 
-Lihat `database/migrations/` (9 migrasi) dan `schema.sql` (dump MySQL dari struktur
+Lihat `database/migrations/` dan `schema.sql` (dump MySQL dari struktur
 migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`,
-`permohonan_izin`, `permohonan_item`, `persetujuan` (+ tabel bawaan Laravel:
-`users`, `cache`, `jobs`).
+`permohonan_izin`, `permohonan_item`, `persetujuan`, `permohonan_siswa`,
+`pos_qr`, `pos_kirim` (+ tabel bawaan Laravel: `users` — kini dengan kolom
+`role` admin/satpam —, `cache`, `jobs`).
 
 ## Tes
 
@@ -126,10 +156,14 @@ migrasi). Tabel: `jurusan`, `kelas`, `guru`, `mapel`, `guru_mapel`, `guru_token`
 php artisan test
 ```
 
-13 test, 62 assertion — mencakup submit form + item wali kelas otomatis, validasi
-jam & penjemput, halaman barcode (QR), persetujuan token benar/salah/token guru lain,
-tolak persetujuan ganda, rekap setelah semua disetujui, halaman guru, dan login admin.
-Terakhir dijalankan: **13 passed** (2026-11-11).
+29 test, 150 assertion — mencakup submit form (termasuk banyak siswa per
+permohonan) + item wali kelas otomatis, validasi jam & penjemput, NIS opsional,
+halaman barcode (QR), persetujuan token benar/salah/token guru lain, tolak
+persetujuan ganda, rekap setelah semua disetujui, halaman guru, login admin
+(termasuk fallback POST), QR pos statis (kirim rekap hanya setelah disetujui
+semua, anti-duplikat), dan akses satpam (login, cek pos berisi/kosong, satpam
+ditolak dari panel admin).
+Terakhir dijalankan: **29 passed** (2026-11-12).
 
 ## Yang belum terverifikasi
 

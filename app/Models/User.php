@@ -15,10 +15,25 @@ class User extends Authenticatable implements FilamentUser
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /** Semua user aplikasi ini adalah admin panel. */
+    /** User baru default role admin (satpam dibuat eksplisit oleh seeder/admin). */
+    protected $attributes = [
+        'role' => 'admin',
+    ];
+
+    /** Hanya role admin yang boleh masuk panel Filament; satpam memakai halaman /satpam. */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return $this->role === 'admin';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isSatpam(): bool
+    {
+        return $this->role === 'satpam';
     }
 
     /**
@@ -30,6 +45,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**

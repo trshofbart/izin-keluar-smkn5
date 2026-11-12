@@ -164,6 +164,12 @@
     </form>
 </div>
 
+<div class="bg-white rounded-2xl shadow p-5 sm:p-6 mt-4">
+    <h3 class="font-bold text-green-800">Kirim Rekap ke Pos Satpam</h3>
+    <p class="text-sm text-slate-500 mt-1 mb-3">Izinmu sudah disetujui semua guru? Di pos satpam, scan QR pos yang tercetak untuk mengirim rekap izinmu ke pos tersebut.</p>
+    @include('partials.scan-pos', ['mode' => 'siswa'])
+</div>
+
 <script>
 const guruByMapel = @json($guruMapel->groupBy('mapel_id')->map(fn($rows) => $rows->map(fn($r) => ['id' => $r->guru->id, 'nama' => $r->guru->nama])->unique('id')->values()));
 const semuaGuru = @json($guruMapel->map(fn($r) => ['id' => $r->guru->id, 'nama' => $r->guru->nama])->unique('id')->values());

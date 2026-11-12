@@ -10,41 +10,57 @@
     <form method="POST" action="{{ route('izin.store') }}" id="form-izin">
         @csrf
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label for="nama_siswa" class="block text-sm font-semibold mb-1">Nama Lengkap *</label>
-                <input type="text" id="nama_siswa" name="nama_siswa" value="{{ old('nama_siswa') }}" required
-                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nama siswa">
+        <div>
+            <div class="flex items-center justify-between">
+                <label class="block text-sm font-semibold">Data Siswa *</label>
+                <button type="button" id="btn-tambah-siswa" class="text-sm bg-green-100 text-green-800 font-semibold px-3 py-1.5 rounded-lg hover:bg-green-200">+ Tambah Siswa</button>
             </div>
-            <div>
-                <label for="nis" class="block text-sm font-semibold mb-1">NIS</label>
-                <input type="text" id="nis" name="nis" value="{{ old('nis') }}"
-                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nomor Induk Siswa (opsional)">
+            <p class="text-xs text-slate-500 mt-1">Satu permohonan bisa untuk banyak siswa. Jurusan terisi otomatis setelah memilih kelas.</p>
+            <div id="siswa-container" class="mt-3 space-y-3">
+                @php $oldSiswa = old('siswa', [['nama_siswa' => '', 'nis' => '', 'no_absen' => '', 'kelas_id' => '']]); @endphp
+                @foreach ($oldSiswa as $idx => $s)
+                    <div class="siswa-row border rounded-xl p-3 bg-slate-50">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Nama Lengkap *</label>
+                                <input type="text" name="siswa[{{ $idx }}][nama_siswa]" value="{{ $s['nama_siswa'] ?? '' }}" required
+                                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nama siswa">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">NIS</label>
+                                <input type="text" name="siswa[{{ $idx }}][nis]" value="{{ $s['nis'] ?? '' }}"
+                                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nomor Induk Siswa (opsional)">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">No. Absen *</label>
+                                <input type="text" name="siswa[{{ $idx }}][no_absen]" value="{{ $s['no_absen'] ?? '' }}" required
+                                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Contoh: 12">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold mb-1">Kelas *</label>
+                                <select name="siswa[{{ $idx }}][kelas_id]" required
+                                    class="siswa-kelas-select w-full border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-600">
+                                    <option value="">— Pilih Kelas —</option>
+                                    @foreach ($kelas as $k)
+                                        <option value="{{ $k->id }}" data-jurusan="{{ $k->jurusan->nama }}" {{ ($s['kelas_id'] ?? '') == $k->id ? 'selected' : '' }}>
+                                            {{ $k->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-semibold mb-1">Jurusan</label>
+                                <input type="text" readonly
+                                    class="siswa-jurusan-input w-full border rounded-lg px-3 py-2 bg-slate-100 text-slate-600"
+                                    placeholder="Terisi otomatis setelah memilih kelas">
+                            </div>
+                        </div>
+                        <div class="text-right mt-2">
+                            <button type="button" class="btn-hapus-siswa text-sm text-red-600 font-semibold px-2 py-1 hover:underline">Hapus Siswa</button>
+                        </div>
+                    </div>
+                @endforeach
             </div>
-            <div>
-                <label for="no_absen" class="block text-sm font-semibold mb-1">No. Absen *</label>
-                <input type="text" id="no_absen" name="no_absen" value="{{ old('no_absen') }}" required
-                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Contoh: 12">
-            </div>
-            <div>
-                <label for="kelas_id" class="block text-sm font-semibold mb-1">Kelas *</label>
-                <select id="kelas_id" name="kelas_id" required
-                    class="w-full border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-600">
-                    <option value="">— Pilih Kelas —</option>
-                    @foreach ($kelas as $k)
-                        <option value="{{ $k->id }}" data-jurusan="{{ $k->jurusan->nama }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
-                            {{ $k->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-
-        <div class="mt-4">
-            <label class="block text-sm font-semibold mb-1">Jurusan</label>
-            <input type="text" id="jurusan_nama" readonly
-                class="w-full border rounded-lg px-3 py-2 bg-slate-100 text-slate-600"
-                placeholder="Terisi otomatis setelah memilih kelas">
         </div>
 
         <div class="mt-4">
@@ -118,7 +134,7 @@
                 </select>
             </div>
             <div>
-                <span class="block text-sm font-semibold mb-1">Cara Pulang *</span>
+                <span class="block text-sm font-semibold mb-1">Cara Keluar *</span>
                 <div class="flex gap-4 pt-2">
                     <label class="flex items-center gap-2 text-sm">
                         <input type="radio" name="cara_pulang" value="dijemput" class="accent-green-700" {{ old('cara_pulang') == 'dijemput' ? 'checked' : '' }} required>
@@ -204,15 +220,69 @@ document.getElementById('btn-tambah').addEventListener('click', () => {
     });
 });
 
-// Jurusan terisi otomatis dari kelas yang dipilih.
-const kelasSelect = document.getElementById('kelas_id');
-const jurusanInput = document.getElementById('jurusan_nama');
-function updateJurusan() {
-    const opt = kelasSelect.options[kelasSelect.selectedIndex];
-    jurusanInput.value = opt ? (opt.dataset.jurusan || '') : '';
+// Baris siswa bisa ditambah; jurusan tiap baris terisi otomatis dari kelasnya.
+const kelasOptions = @json($kelas->map(fn($k) => ['id' => $k->id, 'nama' => $k->nama, 'jurusan' => $k->jurusan->nama]));
+
+function updateJurusanSiswa(row) {
+    const select = row.querySelector('.siswa-kelas-select');
+    const input = row.querySelector('.siswa-jurusan-input');
+    const opt = select.options[select.selectedIndex];
+    input.value = opt ? (opt.dataset.jurusan || '') : '';
 }
-kelasSelect.addEventListener('change', updateJurusan);
-updateJurusan();
+
+function pasangSiswaRow(row) {
+    updateJurusanSiswa(row);
+    row.querySelector('.siswa-kelas-select').addEventListener('change', () => updateJurusanSiswa(row));
+    row.querySelector('.btn-hapus-siswa').addEventListener('click', () => {
+        if (document.querySelectorAll('.siswa-row').length > 1) row.remove();
+        else alert('Minimal 1 siswa.');
+    });
+}
+
+document.querySelectorAll('.siswa-row').forEach(pasangSiswaRow);
+
+let siswaIndex = {{ count($oldSiswa) }};
+document.getElementById('btn-tambah-siswa').addEventListener('click', () => {
+    const container = document.getElementById('siswa-container');
+    const row = document.createElement('div');
+    row.className = 'siswa-row border rounded-xl p-3 bg-slate-50';
+    const kelasOpts = '<option value="">— Pilih Kelas —</option>' + kelasOptions.map(k => `<option value="${k.id}" data-jurusan="${k.jurusan}">${k.nama}</option>`).join('');
+    row.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+                <label class="block text-xs font-semibold mb-1">Nama Lengkap *</label>
+                <input type="text" name="siswa[${siswaIndex}][nama_siswa]" required
+                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nama siswa">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">NIS</label>
+                <input type="text" name="siswa[${siswaIndex}][nis]"
+                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Nomor Induk Siswa (opsional)">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">No. Absen *</label>
+                <input type="text" name="siswa[${siswaIndex}][no_absen]" required
+                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Contoh: 12">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold mb-1">Kelas *</label>
+                <select name="siswa[${siswaIndex}][kelas_id]" required
+                    class="siswa-kelas-select w-full border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-600">${kelasOpts}</select>
+            </div>
+            <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold mb-1">Jurusan</label>
+                <input type="text" readonly
+                    class="siswa-jurusan-input w-full border rounded-lg px-3 py-2 bg-slate-100 text-slate-600"
+                    placeholder="Terisi otomatis setelah memilih kelas">
+            </div>
+        </div>
+        <div class="text-right mt-2">
+            <button type="button" class="btn-hapus-siswa text-sm text-red-600 font-semibold px-2 py-1 hover:underline">Hapus Siswa</button>
+        </div>`;
+    container.appendChild(row);
+    siswaIndex++;
+    pasangSiswaRow(row);
+});
 
 // Nama penjemput muncul bila "Dijemput".
 const penjemputWrap = document.getElementById('penjemput-wrap');

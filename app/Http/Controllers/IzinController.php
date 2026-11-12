@@ -24,11 +24,23 @@ class IzinController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Kompatibilitas form lama: isian siswa tunggal (nama_siswa, nis,
+        // no_absen, kelas_id di level atas) dibungkus menjadi 1 baris siswa.
+        if (! $request->has('siswa') && $request->has('nama_siswa')) {
+            $request->merge(['siswa' => [[
+                'nama_siswa' => $request->input('nama_siswa'),
+                'nis' => $request->input('nis'),
+                'no_absen' => $request->input('no_absen'),
+                'kelas_id' => $request->input('kelas_id'),
+            ]]]);
+        }
+
         $validated = $request->validate([
-            'nama_siswa' => 'required|string|max:100',
-            'nis' => 'nullable|string|max:30',
-            'no_absen' => 'required|string|max:10',
-            'kelas_id' => 'required|exists:kelas,id',
+            'siswa' => 'required|array|min:1',
+            'siswa.*.nama_siswa' => 'required|string|max:100',
+            'siswa.*.nis' => 'nullable|string|max:30',
+            'siswa.*.no_absen' => 'required|string|max:10',
+            'siswa.*.kelas_id' => 'required|exists:kelas,id',
             'keperluan' => 'required|string|max:1000',
             'jam_ke_mulai' => 'required|integer|min:1|max:10',
             'jam_ke_selesai' => 'required|integer|min:1|max:10|gte:jam_ke_mulai',
@@ -40,20 +52,23 @@ class IzinController extends Controller
             'items.*.guru_id' => 'required|exists:guru,id',
         ], [
             'jam_ke_selesai.gte' => 'Jam ke selesai harus sama atau lebih besar dari jam ke mulai.',
-            'nama_penjemput.required_if' => 'Nama penjemput wajib diisi bila cara pulang "Dijemput".',
+            'nama_penjemput.required_if' => 'Nama penjemput wajib diisi bila cara keluar "Dijemput".',
+            'siswa.min' => 'Isi minimal 1 siswa.',
             'items.min' => 'Isi minimal 1 mapel & guru yang ditinggal.',
         ]);
 
-        $kelas = Kelas::findOrFail($validated['kelas_id']);
+        $permohonan = DB::transaction(function () use ($validated) {
+            // Siswa pertama juga disimpan di kolom permohonan (rekap & filter lama).
+            $pertama = $validated['siswa'][0];
+            $kelasPertama = Kelas::findOrFail($pertama['kelas_id']);
 
-        $permohonan = DB::transaction(function () use ($validated, $kelas) {
             $permohonan = PermohonanIzin::create([
                 'kode' => PermohonanIzin::generateKode(),
-                'nama_siswa' => $validated['nama_siswa'],
-                'nis' => $validated['nis'] ?? null,
-                'no_absen' => $validated['no_absen'],
-                'kelas_id' => $kelas->id,
-                'jurusan_id' => $kelas->jurusan_id,
+                'nama_siswa' => $pertama['nama_siswa'],
+                'nis' => $pertama['nis'] ?? null,
+                'no_absen' => $pertama['no_absen'],
+                'kelas_id' => $kelasPertama->id,
+                'jurusan_id' => $kelasPertama->jurusan_id,
                 'keperluan' => $validated['keperluan'],
                 'tanggal' => now()->toDateString(),
                 'jam_ke_mulai' => $validated['jam_ke_mulai'],
@@ -64,6 +79,20 @@ class IzinController extends Controller
                 'status' => 'menunggu',
                 'barcode_kode' => PermohonanIzin::generateBarcodeKode(),
             ]);
+
+            // Semua siswa dalam permohonan ini.
+            $kelasIds = [];
+            foreach ($validated['siswa'] as $row) {
+                $kelas = Kelas::findOrFail($row['kelas_id']);
+                $kelasIds[$kelas->id] = $kelas;
+                $permohonan->siswas()->create([
+                    'nama_siswa' => $row['nama_siswa'],
+                    'nis' => $row['nis'] ?? null,
+                    'no_absen' => $row['no_absen'],
+                    'kelas_id' => $kelas->id,
+                    'jurusan_id' => $kelas->jurusan_id,
+                ]);
+            }
 
             // 1 item per pasangan mapel-guru yang diisi siswa (hindari duplikat).
             $seen = [];
@@ -82,15 +111,20 @@ class IzinController extends Controller
                 ]);
             }
 
-            // 1 item otomatis untuk wali kelas.
-            if ($kelas->wali_kelas_id) {
-                PermohonanItem::create([
-                    'permohonan_id' => $permohonan->id,
-                    'mapel_id' => null,
-                    'guru_id' => $kelas->wali_kelas_id,
-                    'peran' => 'wali_kelas',
-                    'status' => 'menunggu',
-                ]);
+            // 1 item otomatis untuk wali kelas dari SETIAP kelas siswa
+            // (dedupe bila wali kelasnya orang yang sama).
+            $waliSudah = [];
+            foreach ($kelasIds as $kelas) {
+                if ($kelas->wali_kelas_id && ! isset($waliSudah[$kelas->wali_kelas_id])) {
+                    $waliSudah[$kelas->wali_kelas_id] = true;
+                    PermohonanItem::create([
+                        'permohonan_id' => $permohonan->id,
+                        'mapel_id' => null,
+                        'guru_id' => $kelas->wali_kelas_id,
+                        'peran' => 'wali_kelas',
+                        'status' => 'menunggu',
+                    ]);
+                }
             }
 
             return $permohonan;
@@ -102,7 +136,7 @@ class IzinController extends Controller
 
     public function show(string $kode): View
     {
-        $permohonan = PermohonanIzin::with(['kelas.jurusan', 'jurusan', 'items.guru', 'items.mapel', 'items.persetujuan'])
+        $permohonan = PermohonanIzin::with(['kelas.jurusan', 'jurusan', 'siswas.kelas.jurusan', 'siswas.jurusan', 'items.guru', 'items.mapel', 'items.persetujuan'])
             ->where('kode', $kode)
             ->firstOrFail();
 

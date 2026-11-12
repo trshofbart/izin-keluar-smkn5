@@ -7,12 +7,15 @@ berubah menjadi rekap "DIIZINKAN MENINGGALKAN SEKOLAH" yang bisa dicetak.
 
 ## Alur
 
-1. **Siswa** — buka `/`, isi form: nama, NIS, no. absen, kelas (dropdown; jurusan terisi
-   otomatis), keperluan, jam ke mulai–selesai (1–10), daftar dinamis mapel & guru yang
-   ditinggal (tombol "+ Tambah Mapel & Guru", guru difilter dari mapping guru–mapel),
-   kendaraan, cara pulang (Dijemput / Pulang Sendiri + nama penjemput bila dijemput).
-2. **Submit** — `POST /izin` menyimpan permohonan (kode `IZN-YYYYMMDD-XXXX`), membuat
-   1 item persetujuan per pasangan mapel–guru **plus 1 item otomatis untuk wali kelas**,
+1. **Siswa** — buka `/`, isi form: data siswa — nama, NIS, no. absen, kelas (dropdown;
+   jurusan terisi otomatis) — **bisa ditambah untuk banyak siswa** dalam satu permohonan
+   (tombol "+ Tambah Siswa"), keperluan, jam ke mulai–selesai (1–10), daftar dinamis
+   mapel & guru yang ditinggal (tombol "+ Tambah Mapel & Guru", guru difilter dari
+   mapping guru–mapel), kendaraan, cara keluar (Dijemput / Pulang Sendiri + nama
+   penjemput bila dijemput).
+2. **Submit** — `POST /izin` menyimpan permohonan (kode `IZN-YYYYMMDD-XXXX`) beserta
+   semua siswanya di `permohonan_siswa`, membuat 1 item persetujuan per pasangan
+   mapel–guru **plus 1 item otomatis untuk wali kelas dari setiap kelas siswa**,
    lalu redirect ke `/izin/{kode}`.
 3. **Halaman barcode** — `GET /izin/{kode}` menampilkan QR code (isi URL absolut
    `/guru/{barcode_kode}`) + barcode Code-39 + detail permohonan + status tiap guru.

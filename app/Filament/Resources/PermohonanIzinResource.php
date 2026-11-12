@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PermohonanIzinResource\Pages;
 use App\Filament\Resources\PermohonanIzinResource\RelationManagers\ItemsRelationManager;
+use App\Filament\Resources\PermohonanIzinResource\RelationManagers\SiswasRelationManager;
 use App\Models\PermohonanIzin;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -41,7 +42,7 @@ class PermohonanIzinResource extends Resource
                 ])->required(),
             Forms\Components\Select::make('cara_pulang')
                 ->options(['dijemput' => 'Dijemput', 'pulang_sendiri' => 'Pulang Sendiri'])
-                ->required()->label('Cara Pulang'),
+                ->required()->label('Cara Keluar'),
             Forms\Components\TextInput::make('nama_penjemput')->maxLength(100)->label('Nama Penjemput'),
             Forms\Components\Select::make('status')
                 ->options(['menunggu' => 'Menunggu', 'disetujui_sebagian' => 'Disetujui Sebagian', 'disetujui_semua' => 'Disetujui Semua'])
@@ -55,13 +56,14 @@ class PermohonanIzinResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('kode')->searchable()->sortable()->copyable()->label('Kode'),
                 Tables\Columns\TextColumn::make('nama_siswa')->label('Siswa')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('siswas_count')->counts('siswas')->label('Jml Siswa'),
                 Tables\Columns\TextColumn::make('nis')->label('NIS')->searchable(),
                 Tables\Columns\TextColumn::make('kelas.nama')->label('Kelas')->sortable(),
                 Tables\Columns\TextColumn::make('jurusan.nama')->label('Jurusan')->sortable(),
                 Tables\Columns\TextColumn::make('keperluan')->limit(40)->searchable(),
                 Tables\Columns\TextColumn::make('jam_ke_mulai')->label('Jam')->formatStateUsing(fn ($record) => "Jam ke-{$record->jam_ke_mulai} s.d. {$record->jam_ke_selesai}"),
                 Tables\Columns\TextColumn::make('kendaraan')->sortable(),
-                Tables\Columns\TextColumn::make('cara_pulang')->label('Cara Pulang')
+                Tables\Columns\TextColumn::make('cara_pulang')->label('Cara Keluar')
                     ->formatStateUsing(fn (string $state) => $state === 'dijemput' ? 'Dijemput' : 'Pulang Sendiri'),
                 Tables\Columns\TextColumn::make('status')->badge()
                     ->colors([
@@ -108,6 +110,7 @@ class PermohonanIzinResource extends Resource
     public static function getRelations(): array
     {
         return [
+            SiswasRelationManager::class,
             ItemsRelationManager::class,
         ];
     }

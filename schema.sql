@@ -160,3 +160,19 @@ CREATE TABLE IF NOT EXISTS `persetujuan` (
   CONSTRAINT `persetujuan_permohonan_item_id_foreign` FOREIGN KEY (`permohonan_item_id`) REFERENCES `permohonan_item` (`id`) ON DELETE CASCADE,
   CONSTRAINT `persetujuan_guru_id_foreign` FOREIGN KEY (`guru_id`) REFERENCES `guru` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `permohonan_siswa` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `permohonan_id` BIGINT UNSIGNED NOT NULL,
+  `nama_siswa` VARCHAR(100) NOT NULL,
+  `nis` VARCHAR(30) NULL DEFAULT NULL,
+  `no_absen` VARCHAR(10) NOT NULL,
+  `kelas_id` BIGINT UNSIGNED NOT NULL,
+  `jurusan_id` BIGINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `permohonan_siswa_permohonan_id_foreign` FOREIGN KEY (`permohonan_id`) REFERENCES `permohonan_izin` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `permohonan_siswa_kelas_id_foreign` FOREIGN KEY (`kelas_id`) REFERENCES `kelas` (`id`),
+  CONSTRAINT `permohonan_siswa_jurusan_id_foreign` FOREIGN KEY (`jurusan_id`) REFERENCES `jurusan` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

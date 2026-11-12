@@ -38,15 +38,21 @@
 
     <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <dt class="text-slate-500">Kode Izin</dt><dd class="font-mono font-semibold">{{ $permohonan->kode }}</dd>
-        <dt class="text-slate-500">Nama Siswa</dt><dd class="font-semibold">{{ $permohonan->nama_siswa }}</dd>
-        <dt class="text-slate-500">NIS / No. Absen</dt><dd>{{ $permohonan->nis ?? '—' }} @if($permohonan->no_absen) / {{ $permohonan->no_absen }} @endif</dd>
-        <dt class="text-slate-500">Kelas</dt><dd>{{ $permohonan->kelas->nama }}</dd>
-        <dt class="text-slate-500">Jurusan</dt><dd>{{ $permohonan->jurusan->nama }}</dd>
+        <dt class="text-slate-500">Siswa</dt>
+        <dd>
+            @forelse ($permohonan->siswas as $s)
+                <div class="font-semibold">{{ $s->nama_siswa }}</div>
+                <div class="text-slate-500 text-xs mb-1">NIS {{ $s->nis ?? '—' }} · Absen {{ $s->no_absen }} · {{ $s->kelas->nama }} — {{ $s->jurusan->nama }}</div>
+            @empty
+                <div class="font-semibold">{{ $permohonan->nama_siswa }}</div>
+                <div class="text-slate-500 text-xs">NIS {{ $permohonan->nis ?? '—' }} · Absen {{ $permohonan->no_absen }} · {{ $permohonan->kelas->nama }} — {{ $permohonan->jurusan->nama }}</div>
+            @endforelse
+        </dd>
         <dt class="text-slate-500">Tanggal</dt><dd>{{ $permohonan->tanggal->format('d-m-Y') }}</dd>
         <dt class="text-slate-500">Jam Ke</dt><dd>Jam ke-{{ $permohonan->jam_ke_mulai }} s.d. Jam ke-{{ $permohonan->jam_ke_selesai }}</dd>
         <dt class="text-slate-500">Keperluan</dt><dd>{{ $permohonan->keperluan }}</dd>
         <dt class="text-slate-500">Kendaraan</dt><dd>{{ $permohonan->kendaraan }}</dd>
-        <dt class="text-slate-500">Cara Pulang</dt><dd>{{ $permohonan->cara_pulang === 'dijemput' ? 'Dijemput' . ($permohonan->nama_penjemput ? ' ('.$permohonan->nama_penjemput.')' : '') : 'Pulang Sendiri' }}</dd>
+        <dt class="text-slate-500">Cara Keluar</dt><dd>{{ $permohonan->cara_pulang === 'dijemput' ? 'Dijemput' . ($permohonan->nama_penjemput ? ' ('.$permohonan->nama_penjemput.')' : '') : 'Pulang Sendiri' }}</dd>
         <dt class="text-slate-500">Status</dt><dd class="font-semibold {{ $semua ? 'text-green-700' : 'text-amber-700' }}">{{ $permohonan->statusLabel() }}</dd>
     </dl>
 

@@ -56,6 +56,12 @@ class PermohonanIzin extends Model
         return $this->hasMany(PermohonanItem::class, 'permohonan_id');
     }
 
+    /** Semua siswa dalam permohonan ini (bisa lebih dari satu). */
+    public function siswas(): HasMany
+    {
+        return $this->hasMany(PermohonanSiswa::class, 'permohonan_id');
+    }
+
     public function isDisetujuiSemua(): bool
     {
         return $this->status === 'disetujui_semua';

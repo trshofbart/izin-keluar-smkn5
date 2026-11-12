@@ -8,6 +8,7 @@ use App\Models\Jurusan;
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\PermohonanIzin;
+use App\Models\PermohonanSiswa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -35,7 +36,7 @@ class IzinKeluarTest extends TestCase
 
     protected function payload(array $overrides = []): array
     {
-        return array_merge([
+        $data = array_merge([
             'nama_siswa' => 'Budi Contoh',
             'nis' => '12345',
             'no_absen' => '7',
@@ -50,6 +51,18 @@ class IzinKeluarTest extends TestCase
                 ['mapel_id' => $this->mapel->id, 'guru_id' => $this->guruMapel->id],
             ],
         ], $overrides);
+
+        // Form mengirim daftar siswa; cerminkan isian tunggal ke baris siswa pertama.
+        if (! array_key_exists('siswa', $overrides)) {
+            $data['siswa'] = [[
+                'nama_siswa' => $data['nama_siswa'],
+                'nis' => $data['nis'],
+                'no_absen' => $data['no_absen'],
+                'kelas_id' => $data['kelas_id'],
+            ]];
+        }
+
+        return $data;
     }
 
     protected function buatPermohonan(): PermohonanIzin
@@ -70,6 +83,10 @@ class IzinKeluarTest extends TestCase
         $this->assertEquals('menunggu', $permohonan->status);
         $this->assertMatchesRegularExpression('/^IZN-\d{8}-[A-Z0-9]{4}$/', $permohonan->kode);
         $this->assertEquals(32, strlen($permohonan->barcode_kode));
+
+        // Siswa tersimpan sebagai 1 baris di permohonan_siswa.
+        $this->assertEquals(1, $permohonan->siswas()->count());
+        $this->assertEquals('Budi Contoh', $permohonan->siswas()->first()->nama_siswa);
 
         // 1 item guru mapel + 1 item wali kelas otomatis
         $this->assertEquals(2, $permohonan->items()->count());
@@ -232,8 +249,59 @@ class IzinKeluarTest extends TestCase
     public function test_submit_tanpa_no_absen_ditolak(): void
     {
         $this->post('/izin', $this->payload(['no_absen' => null]))
-            ->assertSessionHasErrors('no_absen');
+            ->assertSessionHasErrors('siswa.0.no_absen');
         $this->assertEquals(0, PermohonanIzin::count());
+    }
+
+    /** Banyak siswa (2026-11-12): 1 permohonan bisa berisi beberapa siswa dari kelas berbeda. */
+    public function test_submit_banyak_siswa_dalam_satu_permohonan(): void
+    {
+        $wali2 = Guru::create(['nama' => 'Wali Kelas Kedua', 'nip' => 'NIPWALI002']);
+        $kelas2 = Kelas::create([
+            'jurusan_id' => $this->kelas->jurusan_id, 'tingkat' => 'XII',
+            'nama' => 'XII RPL B', 'wali_kelas_id' => $wali2->id,
+        ]);
+
+        $response = $this->post('/izin', $this->payload([
+            'siswa' => [
+                ['nama_siswa' => 'Budi Contoh', 'nis' => '12345', 'no_absen' => '7', 'kelas_id' => $this->kelas->id],
+                ['nama_siswa' => 'Siti Kedua', 'nis' => null, 'no_absen' => '21', 'kelas_id' => $kelas2->id],
+            ],
+        ]));
+
+        $permohonan = PermohonanIzin::firstOrFail();
+        $response->assertRedirect(route('izin.show', $permohonan->kode));
+
+        // Kedua siswa tersimpan; kolom permohonan memakai siswa pertama.
+        $this->assertEquals(2, PermohonanSiswa::count());
+        $this->assertEquals(['Budi Contoh', 'Siti Kedua'], $permohonan->siswas()->pluck('nama_siswa')->all());
+        $this->assertEquals('Budi Contoh', $permohonan->nama_siswa);
+        $this->assertNull($permohonan->siswas()->where('nama_siswa', 'Siti Kedua')->first()->nis);
+
+        // Item: 1 guru mapel + wali kelas dari KEDUA kelas.
+        $this->assertEquals(3, $permohonan->items()->count());
+        $this->assertTrue($permohonan->items()->where('peran', 'wali_kelas')->where('guru_id', $this->wali->id)->exists());
+        $this->assertTrue($permohonan->items()->where('peran', 'wali_kelas')->where('guru_id', $wali2->id)->exists());
+
+        // Halaman barcode & guru menampilkan kedua nama.
+        $this->get(route('izin.show', $permohonan->kode))
+            ->assertOk()->assertSee('Budi Contoh')->assertSee('Siti Kedua')->assertSee('XII RPL B');
+        $this->get(route('guru.show', $permohonan->barcode_kode))
+            ->assertOk()->assertSee('Siti Kedua');
+    }
+
+    /** Siswa tambahan tanpa nama ditolak validasi. */
+    public function test_submit_siswa_kedua_tanpa_nama_ditolak(): void
+    {
+        $this->post('/izin', $this->payload([
+            'siswa' => [
+                ['nama_siswa' => 'Budi Contoh', 'nis' => '12345', 'no_absen' => '7', 'kelas_id' => $this->kelas->id],
+                ['nama_siswa' => '', 'nis' => null, 'no_absen' => '21', 'kelas_id' => $this->kelas->id],
+            ],
+        ]))->assertSessionHasErrors('siswa.1.nama_siswa');
+
+        $this->assertEquals(0, PermohonanIzin::count());
+        $this->assertEquals(0, PermohonanSiswa::count());
     }
 
     /**

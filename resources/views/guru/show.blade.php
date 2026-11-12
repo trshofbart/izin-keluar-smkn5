@@ -8,9 +8,16 @@
     <p class="text-sm text-slate-500 mt-1">Halaman ini dibuka lewat scan barcode siswa.</p>
 
     <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm mt-4 bg-slate-50 border rounded-xl p-4">
-        <dt class="text-slate-500">Nama Siswa</dt><dd class="font-semibold">{{ $permohonan->nama_siswa }}</dd>
-        <dt class="text-slate-500">NIS / Kelas</dt><dd>{{ $permohonan->nis ?? '—' }} / {{ $permohonan->kelas->nama }}</dd>
-        <dt class="text-slate-500">Jurusan</dt><dd>{{ $permohonan->jurusan->nama }}</dd>
+        <dt class="text-slate-500">Siswa</dt>
+        <dd>
+            @forelse ($permohonan->siswas as $s)
+                <div class="font-semibold">{{ $s->nama_siswa }}</div>
+                <div class="text-slate-500 text-xs mb-1">NIS {{ $s->nis ?? '—' }} · Absen {{ $s->no_absen }} · {{ $s->kelas->nama }} — {{ $s->jurusan->nama }}</div>
+            @empty
+                <div class="font-semibold">{{ $permohonan->nama_siswa }}</div>
+                <div class="text-slate-500 text-xs">NIS {{ $permohonan->nis ?? '—' }} · {{ $permohonan->kelas->nama }} — {{ $permohonan->jurusan->nama }}</div>
+            @endforelse
+        </dd>
         <dt class="text-slate-500">Keperluan</dt><dd>{{ $permohonan->keperluan }}</dd>
         <dt class="text-slate-500">Jam Ke</dt><dd>Jam ke-{{ $permohonan->jam_ke_mulai }} s.d. Jam ke-{{ $permohonan->jam_ke_selesai }}</dd>
         <dt class="text-slate-500">Status</dt><dd class="font-semibold">{{ $permohonan->statusLabel() }}</dd>

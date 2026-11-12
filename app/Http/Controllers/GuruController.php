@@ -15,7 +15,7 @@ class GuruController extends Controller
 {
     public function show(string $barcodeKode): View
     {
-        $permohonan = PermohonanIzin::with(['kelas.jurusan', 'jurusan', 'items.guru', 'items.mapel', 'items.persetujuan'])
+        $permohonan = PermohonanIzin::with(['kelas.jurusan', 'jurusan', 'siswas.kelas.jurusan', 'siswas.jurusan', 'items.guru', 'items.mapel', 'items.persetujuan'])
             ->where('barcode_kode', $barcodeKode)
             ->firstOrFail();
 
